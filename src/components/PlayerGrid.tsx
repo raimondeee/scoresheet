@@ -17,7 +17,12 @@ export function PlayerGrid({
       {players.map((player) => {
         const on = selected.includes(player.id);
         return (
-          <button key={player.id} type="button" className={on ? 'pick on' : 'pick'} onClick={() => onPick(player.id)}>
+          <button
+            key={player.id}
+            type="button"
+            className={`pick${player.position === 'G' ? ' goalie' : ''}${on ? ' on' : ''}`}
+            onClick={() => onPick(player.id)}
+          >
             <b>#{player.number}</b>
             <span>{player.last}</span>
             <small>{badges[player.id] || `${player.first} · ${player.position}`}</small>

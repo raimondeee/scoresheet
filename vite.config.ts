@@ -2,44 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { shouldArchiveScorebook } from './src/backup.ts';
 
 const HISTORY_LIMIT = 40;
 const HISTORY_NAME = /^scorekeeper-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z\.json$/;
-
-function bookSignature(text: string) {
-  const state = JSON.parse(text) as {
-    teamName?: string;
-    roster?: unknown;
-    filmLeadSeconds?: number;
-    games?: Array<Record<string, unknown>>;
-  };
-  return JSON.stringify({
-    teamName: state.teamName,
-    roster: state.roster,
-    filmLeadSeconds: state.filmLeadSeconds,
-    games: (state.games ?? []).map((game) => ({
-      id: game.id,
-      status: game.status,
-      opponent: game.opponent,
-      date: game.date,
-      scoreUs: game.scoreUs,
-      scoreOpp: game.scoreOpp,
-      sogUs: game.sogUs,
-      sogOpp: game.sogOpp,
-      events: game.events,
-      youtubeUrl: game.youtubeUrl,
-      dressedIds: game.dressedIds,
-      penalties: Array.isArray(game.penalties)
-        ? game.penalties.map((penalty) => {
-            const item = penalty as Record<string, unknown>;
-            return { ...item, remainingMs: 0 };
-          })
-        : game.penalties,
-      goalieId: game.goalieId,
-      starterGoalieId: game.starterGoalieId,
-    })),
-  });
-}
 
 function scorebookApi(): Plugin {
   const file = path.resolve(process.cwd(), 'data/scorekeeper.json');
@@ -94,7 +60,7 @@ function scorebookApi(): Plugin {
             const restored = fs.readFileSync(full, 'utf8');
             if (fs.existsSync(file)) {
               const current = fs.readFileSync(file, 'utf8');
-              if (bookSignature(current) !== bookSignature(restored)) archivePrevious(current);
+              if (current !== restored) archivePrevious(current);
             }
             fs.writeFileSync(file, restored);
             res.setHeader('Content-Type', 'application/json');
@@ -128,9 +94,9 @@ function scorebookApi(): Plugin {
             if (fs.existsSync(file)) {
               const previous = fs.readFileSync(file, 'utf8');
               try {
-                if (bookSignature(previous) !== bookSignature(next)) archivePrevious(previous);
+                if (shouldArchiveScorebook(previous, next)) archivePrevious(previous);
               } catch {
-                archivePrevious(previous);
+                // A save that cannot be read is not a period boundary.
               }
             }
             fs.writeFileSync(file, next);

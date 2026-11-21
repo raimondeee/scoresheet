@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { filmHref, formatClock, gameElapsedMs, manpower, plusMinusFor, readPenaltyRemaining, readRemaining, situation, videoSecondsFromAnchor } from './hockey.ts';
+import { shouldArchiveScorebook } from './backup.ts';
+import { eventTone, filmHref, formatClock, gameElapsedMs, manpower, plusMinusFor, readPenaltyRemaining, readRemaining, situation, videoSecondsFromAnchor } from './hockey.ts';
 import { buildBox } from './stats.ts';
 import {
   addOppGoal,
@@ -255,6 +256,28 @@ test('one YouTube stamp lines the other events up by the game clock', () => {
   game = alignFilm(game, shot.id, 3_723, 2_000);
   assert.equal(game.events[0].videoSeconds, 3_723);
   assert.equal(game.events.find((event) => event.type === 'GOAL')?.videoSeconds, 3_783);
+
+  const goal = game.events.find((event) => event.type === 'GOAL')!;
+  game = {
+    ...game,
+    events: [...game.events, { ...goal, id: 'later', clockMs: 720_000, videoSeconds: 1 }],
+  };
+  game = alignFilm(game, goal.id, 5_000, 3_000, true);
+  assert.equal(game.events[0].videoSeconds, 3_723);
+  assert.equal(game.events.find((event) => event.id === goal.id)?.videoSeconds, 5_000);
+  assert.equal(game.events.find((event) => event.id === 'later')?.videoSeconds, 5_060);
+});
+
+test('event colors follow the kind of play', () => {
+  assert.equal(eventTone({ type: 'GOAL' }), 'goal');
+  assert.equal(eventTone({ type: 'OPP_GOAL' }), 'goal');
+  assert.equal(eventTone({ type: 'PENALTY' }), 'penalty');
+  assert.equal(eventTone({ type: 'OPP_PENALTY' }), 'penalty');
+  assert.equal(eventTone({ type: 'OPP_SHOT' }), 'save');
+  assert.equal(eventTone({ type: 'PENALTY_SHOT', meta: { result: 'save' } }), 'save');
+  assert.equal(eventTone({ type: 'PENALTY_SHOT', meta: { result: 'goal' } }), 'goal');
+  assert.equal(eventTone({ type: 'SHOT' }), 'shot');
+  assert.equal(eventTone({ type: 'GREAT_PLAY' }), 'play');
 });
 
 test('film links open the lead time before the tag', () => {
@@ -264,6 +287,19 @@ test('film links open the lead time before the tag', () => {
   );
   assert.equal(filmHref('https://youtu.be/abc123XYZ', 5, 10), 'https://www.youtube.com/watch?v=abc123XYZ&t=0s');
   assert.equal(filmHref('', 20, 5), null);
+});
+
+test('scorebook copies are kept at a new game, a new period, and the final', () => {
+  const book = (games: unknown[]) => JSON.stringify({ version: 1, games });
+  const game = { id: 'g1', status: 'live', clock: { period: 1 } };
+  assert.equal(shouldArchiveScorebook(book([]), book([game])), true);
+  assert.equal(shouldArchiveScorebook(book([game]), book([{ ...game, scoreUs: 1 }])), false);
+  assert.equal(shouldArchiveScorebook(book([game]), book([{ ...game, clock: { period: 2 } }])), true);
+  assert.equal(
+    shouldArchiveScorebook(book([{ ...game, clock: { period: 3 } }]), book([{ ...game, status: 'final', clock: { period: 3 } }])),
+    true,
+  );
+  assert.equal(shouldArchiveScorebook(book([game]), book([game])), false);
 });
 
 test('extra skater columns follow power-play, shorthanded, and game-winning goals', () => {

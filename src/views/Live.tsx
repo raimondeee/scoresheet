@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BoxScore } from '../components/BoxScore.tsx';
 import { EventEditModal } from '../components/EventEdit.tsx';
+import { FilmPlayer, type FilmPlayerHandle } from '../components/FilmPlayer.tsx';
 import { Modal } from '../components/Modal.tsx';
 import { PlayerGrid } from '../components/PlayerGrid.tsx';
 import {
@@ -18,6 +19,7 @@ import {
   readRemaining,
   situation,
   strengthLabel,
+  youtubeId,
 } from '../hockey.ts';
 import { useApp } from '../store.tsx';
 import type { ActivePenalty, Game, PenaltyKind, PenaltyLengths, Player, PlusMinus, ShotResult, Strength } from '../types.ts';
@@ -143,14 +145,31 @@ export function Live() {
   const [wizard, setWizard] = useState<Wizard | null>(null);
   const [tick, setTick] = useState(0);
   const [videoText, setVideoText] = useState('');
+  const [showFilm, setShowFilm] = useState(false);
+  const [link, setLink] = useState('');
   const videoRef = useRef(videoText);
   videoRef.current = videoText;
+  const playerRef = useRef<FilmPlayerHandle>(null);
+  const stampRef = useRef<number | null>(null);
   const expireLock = useRef(false);
 
   useEffect(() => {
     setVideoText(game?.videoSeconds == null ? '' : formatVideo(game.videoSeconds));
+    setLink(game?.youtubeUrl ?? '');
+    setShowFilm(false);
     setWizard(null);
   }, [game?.id]);
+
+  useEffect(() => {
+    if (!showFilm) return;
+    const id = window.setInterval(() => {
+      if (stampRef.current != null) return;
+      const seconds = playerRef.current?.seconds();
+      if (seconds == null) return;
+      setVideoText(formatVideo(seconds));
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [showFilm, game?.youtubeUrl]);
 
   useEffect(() => {
     if (!game?.clock.running) {
@@ -191,6 +210,7 @@ export function Live() {
     );
   }
 
+  const filmId = youtubeId(game.youtubeUrl);
   const now = Date.now() + tick * 0;
   const sit = situation(game.penalties, game.clock, now);
   const remaining = readRemaining(game.clock, now);
@@ -199,19 +219,33 @@ export function Live() {
   const ourMode = plusMinusFor(true, sit.ourStrength, false);
   const theirMode = plusMinusFor(false, sit.theirStrength, false);
 
-  function videoNow() {
+  function readPlayhead() {
+    if (showFilm) {
+      const seconds = playerRef.current?.seconds();
+      if (seconds != null) return seconds;
+    }
     const text = videoRef.current.trim();
     if (!text) return null;
     const parsed = parseVideoClock(text);
     return parsed == null ? game!.videoSeconds : parsed;
   }
 
+  function videoNow() {
+    return stampRef.current != null ? stampRef.current : readPlayhead();
+  }
+
+  function holdStamp() {
+    stampRef.current = readPlayhead();
+  }
+
   function begin(next: Wizard) {
+    if (next.type === 'goal' || next.type === 'opp-goal' || next.type === 'penalty') holdStamp();
     app.pause(game!.id);
     setWizard(next);
   }
 
   function close() {
+    stampRef.current = null;
     setWizard(null);
   }
 
@@ -246,7 +280,50 @@ export function Live() {
   const last = game.events[game.events.length - 1];
 
   return (
-    <div className="page live-page">
+    <div className={`page live-page${showFilm ? ' with-film' : ''}`}>
+      <section className={showFilm ? 'film-stage' : 'card film-dock'}>
+        <div className="spread">
+          <h2>Film</h2>
+          <button type="button" className={showFilm ? 'btn btn-green' : 'btn btn-ghost'} onClick={() => setShowFilm((on) => !on)}>
+            {showFilm ? 'Hide film' : 'Play film here'}
+          </button>
+        </div>
+        {showFilm ? (
+          <>
+            <div className="film-link-row">
+              <input
+                value={link}
+                aria-label="YouTube link"
+                placeholder="https://www.youtube.com/watch?v=…"
+                onChange={(event) => setLink(event.target.value)}
+              />
+              <button type="button" className="btn btn-ghost" onClick={() => app.editYoutube(game.id, link)}>
+                Save link
+              </button>
+            </div>
+            {filmId ? (
+              <>
+                <FilmPlayer
+                  key={filmId}
+                  ref={playerRef}
+                  videoId={filmId}
+                  start={game.videoSeconds ?? 0}
+                  onPause={() => {
+                    if (game.clock.running) app.pause(game.id);
+                  }}
+                />
+                <p className="muted">Pausing the film stops the clock.</p>
+              </>
+            ) : (
+              <p className="muted">Save a YouTube link and the film plays here.</p>
+            )}
+          </>
+        ) : (
+          <p className="muted">Watch the uploaded film on this page. Each tag saves the moment you tap it.</p>
+        )}
+      </section>
+
+      <div className="live-sheet">
       <div className="live-head">
         <div>
           <p className="kicker">
@@ -258,7 +335,6 @@ export function Live() {
           Dressed {game.dressedIds.length}
         </button>
       </div>
-
       <section className="scoreboard">
         <div className="score-side us">
           <span>Us</span>
@@ -297,8 +373,11 @@ export function Live() {
               value={videoText}
               placeholder="12:34"
               aria-label="YouTube time for the next tag"
+              readOnly={showFilm}
               onChange={(event) => setVideoText(event.target.value)}
-              onBlur={() => app.stampVideo(game.id, videoNow())}
+              onBlur={() => {
+                if (!showFilm) app.stampVideo(game.id, videoNow());
+              }}
             />
           </label>
         </div>
@@ -358,11 +437,11 @@ export function Live() {
           </section>
 
           <div className="actions">
-            <button type="button" className="action our-shot" onClick={() => setWizard({ type: 'shot' })}>
+            <button type="button" className="action our-shot" onClick={() => { holdStamp(); setWizard({ type: 'shot' }); }}>
               Our shot
               <small>Clock keeps running</small>
             </button>
-            <button type="button" className="action opp-shot" onClick={() => app.oppShot(game.id)}>
+            <button type="button" className="action opp-shot" onClick={() => app.oppShot(game.id, videoNow())}>
               Opp shot
               <small>Clock keeps running</small>
             </button>
@@ -449,6 +528,7 @@ export function Live() {
         <h2>Box score</h2>
         <BoxScore game={game} roster={roster} />
       </section>
+      </div>
 
       {wizard?.type === 'shot' ? (
         <Modal title="Our shot" subtitle="Clock keeps running." onClose={close}>

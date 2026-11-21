@@ -107,9 +107,9 @@ export function Home() {
       <section className="card stack">
         <h2>Earlier copies</h2>
         <p className="muted">
-          A copy is kept on this computer when the book changes, not on every clock tick. The current file also lives in the git repo, so a push keeps it off this machine.
+          A copy is kept when a game is created, when a new period starts, and when a game is finalized. The current file also lives in the git repo, so a push keeps it off this machine.
         </p>
-        {copies.length === 0 ? <p className="empty">No earlier copy yet. One is saved the next time a game changes.</p> : null}
+        {copies.length === 0 ? <p className="empty">No earlier copy yet. One is saved when you create a game, start a period, or finalize.</p> : null}
         {copies.slice(0, 8).map((copy) => (
           <div key={copy.name} className="spread">
             <span>{new Date(copy.savedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span>

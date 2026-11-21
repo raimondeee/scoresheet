@@ -1,13 +1,25 @@
 import { useEffect, useState } from 'react';
+import { EventFilter, matchesEventFilter, type EventFilterValue } from '../components/EventFilter.tsx';
 import {
   FILM_TYPES,
+  eventTone,
   filmHref,
   formatDate,
   formatGameStamp,
   formatVideoClock,
+  gameElapsedMs,
   parseVideoClock,
 } from '../hockey.ts';
 import { useApp } from '../store.tsx';
+
+function byGameClock<T extends { period: number; clockMs: number }>(
+  game: { periodLengthsMs: [number, number, number]; otLengthMs: number },
+  events: T[],
+) {
+  return [...events].sort(
+    (a, b) => gameElapsedMs(game, a.period, a.clockMs) - gameElapsedMs(game, b.period, b.clockMs),
+  );
+}
 
 export function Film() {
   const app = useApp();
@@ -16,9 +28,10 @@ export function Film() {
   const [anchorId, setAnchorId] = useState<string | null>(null);
   const [timeText, setTimeText] = useState('00:00:00');
   const [error, setError] = useState('');
+  const [kind, setKind] = useState<EventFilterValue>('all');
   const games = [...app.state.games].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const selected = filter === 'all' ? null : games.find((game) => game.id === filter) ?? null;
-  const filmEvents = selected?.events.filter((event) => FILM_TYPES.has(event.type)) ?? [];
+  const filmEvents = selected ? byGameClock(selected, selected.events.filter((event) => FILM_TYPES.has(event.type))) : [];
   const anchor = filmEvents.find((event) => event.id === anchorId) ?? filmEvents[0] ?? null;
 
   useEffect(() => {
@@ -32,15 +45,16 @@ export function Film() {
   }, [anchor?.id]);
 
   const rows = (selected ? [selected] : games).flatMap((game) =>
-    game.events.filter((event) => FILM_TYPES.has(event.type)).map((event) => ({ game, event })),
+    byGameClock(game, game.events.filter((event) => FILM_TYPES.has(event.type))).map((event) => ({ game, event })),
   );
+  const visibleRows = rows.filter(({ event }) => matchesEventFilter(event, kind));
 
   function saveLink() {
     if (!selected) return;
     app.editYoutube(selected.id, url);
   }
 
-  function align() {
+  function align(laterOnly: boolean) {
     if (!selected || !anchor) return;
     const parsed = parseVideoClock(timeText);
     if (parsed == null) {
@@ -48,7 +62,7 @@ export function Film() {
       return;
     }
     setError('');
-    app.alignFilm(selected.id, anchor.id, parsed);
+    app.alignFilm(selected.id, anchor.id, parsed, laterOnly);
   }
 
   return (
@@ -57,7 +71,7 @@ export function Film() {
         <p className="kicker">Coaches film</p>
         <h1>YouTube tags</h1>
         <p className="lede">
-          Paste the saved video, then mark where one event sits in it. The rest line up from the game clock.
+          Paste the saved video, then mark where one event sits in it. The rest line up from the game clock. The video keeps rolling through whistles and period breaks, so pin a later event when a tag drifts.
         </p>
       </div>
 
@@ -89,7 +103,7 @@ export function Film() {
             {filmEvents.length ? (
               <>
                 <label className="field">
-                  First event to sync
+                  Event to sync
                   <select value={anchor?.id ?? ''} onChange={(event) => setAnchorId(event.target.value)}>
                     {filmEvents.map((event) => (
                       <option key={event.id} value={event.id}>
@@ -108,11 +122,14 @@ export function Film() {
                   />
                 </label>
                 <p className="muted">
-                  Find that play in the video and enter the time YouTube shows. Every other event shifts by the game clock between them. Links still open {app.state.filmLeadSeconds}s early.
+                  Find that play in the video and enter the time YouTube shows. Align timestamps moves every event by the game clock. Realign later events keeps earlier tags and moves only this play and the ones after it. Links still open {app.state.filmLeadSeconds}s early.
                 </p>
-                <div className="row">
-                  <button type="button" className="btn btn-green" onClick={align}>
+                <div className="row wrap">
+                  <button type="button" className="btn btn-green" onClick={() => align(false)}>
                     Align timestamps
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={() => align(true)}>
+                    Realign later events
                   </button>
                   <label className="field grow">
                     Lead time (seconds)
@@ -138,13 +155,16 @@ export function Film() {
 
       {selected && rows.length === 0 ? null : rows.length === 0 ? (
         <p className="empty card">Goals, penalties, penalty shots, and great plays show up here.</p>
-      ) : null}
+      ) : (
+        <EventFilter events={rows.map(({ event }) => event)} value={kind} onChange={setKind} />
+      )}
+      {rows.length > 0 && visibleRows.length === 0 ? <p className="empty card">Nothing in this filter.</p> : null}
       <div className="stack">
-        {rows.map(({ game, event }) => {
+        {visibleRows.map(({ game, event }) => {
           const href = filmHref(game.youtubeUrl, event.videoSeconds, app.state.filmLeadSeconds);
           const openAt = event.videoSeconds == null ? null : Math.max(0, event.videoSeconds - app.state.filmLeadSeconds);
           return (
-            <article key={event.id} className="card film-row">
+            <article key={event.id} className={`card film-row tone-${eventTone(event)}`}>
               <div>
                 <strong>{event.detail}</strong>
                 <p>

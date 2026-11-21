@@ -78,6 +78,11 @@ export function Setup() {
     setDressed((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]));
   }
 
+  function chooseGoalie(id: string) {
+    setGoalieId(id);
+    if (id) setDressed((current) => (current.includes(id) ? current : [...current, id]));
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
     if (!opponent.trim()) {
@@ -88,7 +93,7 @@ export function Setup() {
       setError('Each period needs a length.');
       return;
     }
-    if (goalies.length && !dressed.includes(goalieId)) {
+    if (goalies.length && goalieId && !dressed.includes(goalieId)) {
       setError('The starting goalie has to be dressed.');
       return;
     }
@@ -153,17 +158,28 @@ export function Setup() {
           <ClockPair label="Major" value={major} onChange={setMajor} />
           <ClockPair label="Misconduct" value={misconduct} onChange={setMisconduct} />
         </div>
-        <label className="field">
-          Starting goalie
-          <select value={goalieId} onChange={(event) => setGoalieId(event.target.value)}>
-            <option value="">Empty net</option>
+        <div>
+          <h2>Starting goalie</h2>
+          <div className="picks">
+            <button type="button" className={goalieId ? 'pick' : 'pick on'} onClick={() => setGoalieId('')}>
+              <b>—</b>
+              <span>Empty net</span>
+              <small>Start</small>
+            </button>
             {goalies.map((player) => (
-              <option key={player.id} value={player.id}>
-                #{player.number} {player.first} {player.last}
-              </option>
+              <button
+                type="button"
+                key={player.id}
+                className={goalieId === player.id ? 'pick goalie on' : 'pick goalie'}
+                onClick={() => chooseGoalie(player.id)}
+              >
+                <b>#{player.number}</b>
+                <span>{player.last}</span>
+                <small>{player.position}</small>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
         <div>
           <div className="spread">
             <h2>Dressed</h2>
@@ -176,7 +192,7 @@ export function Setup() {
               <button
                 type="button"
                 key={player.id}
-                className={dressed.includes(player.id) ? 'pick on' : 'pick'}
+                className={`pick${player.position === 'G' ? ' goalie' : ''}${dressed.includes(player.id) ? ' on' : ''}`}
                 onClick={() => toggle(player.id)}
               >
                 <b>#{player.number}</b>

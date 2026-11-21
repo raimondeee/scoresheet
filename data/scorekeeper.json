@@ -805,7 +805,7 @@
       "youtubeUrl": "https://www.youtube.com/watch?v=Qz3v0mLj4e4",
       "status": "final",
       "createdAt": "2026-11-16T06:03:01.148Z",
-      "updatedAt": "2026-11-21T07:06:15.354Z",
+      "updatedAt": "2026-11-21T19:01:10.679Z",
       "finalizedAt": "2026-11-21T07:06:15.354Z",
       "periodLengthsMs": [
         900000,
@@ -952,7 +952,7 @@
           "clockMs": 874000,
           "at": "2026-11-16T06:07:09.516Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 450,
           "meta": {
             "playerId": "p-3"
           },
@@ -964,7 +964,7 @@
           "clockMs": 862000,
           "at": "2026-11-16T06:07:56.131Z",
           "detail": "#19 Leo Krebsbach — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 462,
           "meta": {
             "playerId": "p-19"
           },
@@ -976,7 +976,7 @@
           "clockMs": 820000,
           "at": "2026-11-16T06:08:50.047Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 504,
           "meta": {
             "goalieId": "p-17"
           },
@@ -988,7 +988,7 @@
           "clockMs": 796000,
           "at": "2026-11-16T06:10:00.916Z",
           "detail": "Opponent scorer not entered • EV",
-          "videoSeconds": 203,
+          "videoSeconds": 528,
           "meta": {
             "oppNumber": "",
             "onIceIds": [
@@ -1012,7 +1012,7 @@
           "clockMs": 580000,
           "at": "2026-11-16T06:21:08.442Z",
           "detail": "Opponent — Roughing (02:00)",
-          "videoSeconds": 870,
+          "videoSeconds": 744,
           "meta": {
             "playerId": null,
             "infraction": "Roughing",
@@ -1032,7 +1032,7 @@
           "clockMs": 558000,
           "at": "2026-11-16T06:21:40.409Z",
           "detail": "#10 Kaden Lasota — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 766,
           "meta": {
             "playerId": "p-10"
           },
@@ -1044,7 +1044,7 @@
           "clockMs": 550000,
           "at": "2026-11-16T06:21:47.909Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 774,
           "meta": {
             "playerId": "p-73"
           },
@@ -1056,7 +1056,7 @@
           "clockMs": 505000,
           "at": "2026-11-16T06:23:17.509Z",
           "detail": "#88 Boston Smith — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 819,
           "meta": {
             "playerId": "p-88"
           },
@@ -1068,7 +1068,7 @@
           "clockMs": 479000,
           "at": "2026-11-16T06:23:43.209Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 845,
           "meta": {
             "playerId": "p-89"
           },
@@ -1080,7 +1080,7 @@
           "clockMs": 379000,
           "at": "2026-11-16T06:28:27.243Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 945,
           "meta": {
             "playerId": "p-18"
           },
@@ -1092,7 +1092,7 @@
           "clockMs": 196000,
           "at": "2026-11-16T06:32:37.960Z",
           "detail": "Opponent scorer not entered • EV",
-          "videoSeconds": 1560,
+          "videoSeconds": 1128,
           "meta": {
             "oppNumber": "",
             "onIceIds": [
@@ -1116,7 +1116,7 @@
           "clockMs": 1000,
           "at": "2026-11-16T06:53:57.306Z",
           "detail": "#77 Alex Poulin — Slashing (04:00)",
-          "videoSeconds": 2839,
+          "videoSeconds": 1323,
           "meta": {
             "playerId": "p-77",
             "infraction": "Slashing",
@@ -1136,7 +1136,7 @@
           "clockMs": 900000,
           "at": "2026-11-16T06:54:09.045Z",
           "detail": "2ND PERIOD ready — 15:00",
-          "videoSeconds": null,
+          "videoSeconds": 1324,
           "meta": {
             "previousPeriod": 1
           },
@@ -1148,7 +1148,7 @@
           "clockMs": 837000,
           "at": "2026-11-21T05:34:50.533Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 1387,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1160,7 +1160,7 @@
           "clockMs": 785000,
           "at": "2026-11-21T05:55:41.187Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 1439,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1172,7 +1172,7 @@
           "clockMs": 760000,
           "at": "2026-11-21T05:56:25.123Z",
           "detail": "Opponent — Roughing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1464,
           "meta": {
             "playerId": null,
             "infraction": "Roughing",
@@ -1192,7 +1192,7 @@
           "clockMs": 551000,
           "at": "2026-11-21T06:02:14.706Z",
           "detail": "Opponent — Tripping (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1673,
           "meta": {
             "playerId": null,
             "infraction": "Tripping",
@@ -1212,7 +1212,7 @@
           "clockMs": 507000,
           "at": "2026-11-21T06:03:24.403Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 1717,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1224,7 +1224,7 @@
           "clockMs": 477000,
           "at": "2026-11-21T06:03:54.904Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1747,
           "meta": {
             "playerId": "p-18"
           },
@@ -1236,7 +1236,7 @@
           "clockMs": 469000,
           "at": "2026-11-21T06:04:13.571Z",
           "detail": "#89 Dellas Potter — Interference (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1755,
           "meta": {
             "playerId": "p-89",
             "infraction": "Interference",
@@ -1256,7 +1256,7 @@
           "clockMs": 424000,
           "at": "2026-11-21T06:06:13.923Z",
           "detail": "#73 Calvin Lind — Roughing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1800,
           "meta": {
             "playerId": "p-73",
             "infraction": "Roughing",
@@ -1276,7 +1276,7 @@
           "clockMs": 369000,
           "at": "2026-11-21T06:09:15.305Z",
           "detail": "#3 Carson Bader — Goal",
-          "videoSeconds": null,
+          "videoSeconds": 1855,
           "meta": {
             "playerId": "p-3",
             "result": "goal",
@@ -1291,7 +1291,7 @@
           "clockMs": 215000,
           "at": "2026-11-21T06:13:09.338Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 2009,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1303,7 +1303,7 @@
           "clockMs": 173000,
           "at": "2026-11-21T06:14:10.472Z",
           "detail": "#71 Declan Rayner — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2051,
           "meta": {
             "playerId": "p-71"
           },
@@ -1315,7 +1315,7 @@
           "clockMs": 127000,
           "at": "2026-11-21T06:15:10.555Z",
           "detail": "#71 Declan Rayner — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2097,
           "meta": {
             "playerId": "p-71"
           },
@@ -1327,7 +1327,7 @@
           "clockMs": 20000,
           "at": "2026-11-21T06:32:42.052Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2204,
           "meta": {
             "playerId": "p-89"
           },
@@ -1339,7 +1339,7 @@
           "clockMs": 900000,
           "at": "2026-11-21T06:33:35.651Z",
           "detail": "3RD PERIOD ready — 15:00",
-          "videoSeconds": null,
+          "videoSeconds": 2224,
           "meta": {
             "previousPeriod": 2
           },
@@ -1351,7 +1351,7 @@
           "clockMs": 889000,
           "at": "2026-11-21T06:34:35.949Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 2235,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1363,7 +1363,7 @@
           "clockMs": 867000,
           "at": "2026-11-21T06:35:15.201Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 2257,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1375,7 +1375,7 @@
           "clockMs": 845000,
           "at": "2026-11-21T06:36:40.152Z",
           "detail": "#73 Calvin Lind — Unassisted • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2279,
           "meta": {
             "scorerId": "p-73",
             "assist1Id": null,
@@ -1401,7 +1401,7 @@
           "clockMs": 800000,
           "at": "2026-11-21T06:38:39.233Z",
           "detail": "#19 Leo Krebsbach — Roughing (01:30)",
-          "videoSeconds": null,
+          "videoSeconds": 2324,
           "meta": {
             "playerId": "p-19",
             "infraction": "Roughing",
@@ -1421,7 +1421,7 @@
           "clockMs": 788000,
           "at": "2026-11-21T06:39:23.017Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2336,
           "meta": {
             "playerId": "p-18"
           },
@@ -1433,7 +1433,7 @@
           "clockMs": 739000,
           "at": "2026-11-21T06:42:25.731Z",
           "detail": "Save — Christopher Mahan",
-          "videoSeconds": null,
+          "videoSeconds": 2385,
           "meta": {
             "goalieId": "p-17"
           },
@@ -1445,7 +1445,7 @@
           "clockMs": 719000,
           "at": "2026-11-21T06:43:43.265Z",
           "detail": "Opponent scorer not entered • SH • PP minor ended",
-          "videoSeconds": null,
+          "videoSeconds": 2405,
           "meta": {
             "oppNumber": "",
             "onIceIds": [],
@@ -1463,7 +1463,7 @@
           "clockMs": 606000,
           "at": "2026-11-21T06:46:23.063Z",
           "detail": "Opponent — Tripping (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2518,
           "meta": {
             "playerId": null,
             "infraction": "Tripping",
@@ -1483,7 +1483,7 @@
           "clockMs": 546000,
           "at": "2026-11-21T06:47:53.615Z",
           "detail": "#19 Leo Krebsbach — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2578,
           "meta": {
             "playerId": "p-19"
           },
@@ -1495,7 +1495,7 @@
           "clockMs": 499000,
           "at": "2026-11-21T06:50:38.245Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2625,
           "meta": {
             "playerId": "p-89"
           },
@@ -1507,7 +1507,7 @@
           "clockMs": 454000,
           "at": "2026-11-21T06:52:53.328Z",
           "detail": "Opponent scorer not entered • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2670,
           "meta": {
             "oppNumber": "",
             "onIceIds": [
@@ -1531,7 +1531,7 @@
           "clockMs": 385000,
           "at": "2026-11-21T06:55:18.546Z",
           "detail": "#71 Declan Rayner — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2739,
           "meta": {
             "playerId": "p-71"
           },
@@ -1543,7 +1543,7 @@
           "clockMs": 383000,
           "at": "2026-11-21T06:55:34.280Z",
           "detail": "Opponent — Roughing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2741,
           "meta": {
             "playerId": null,
             "infraction": "Roughing",
@@ -1563,7 +1563,7 @@
           "clockMs": 331000,
           "at": "2026-11-21T06:56:52.462Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2793,
           "meta": {
             "playerId": "p-89"
           },
@@ -1575,7 +1575,7 @@
           "clockMs": 273000,
           "at": "2026-11-21T06:58:54.245Z",
           "detail": "#44 Everett Lee — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2851,
           "meta": {
             "playerId": "p-44"
           },
@@ -1587,7 +1587,7 @@
           "clockMs": 140000,
           "at": "2026-11-21T07:02:38.012Z",
           "detail": "#73 Calvin Lind — Roughing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2984,
           "meta": {
             "playerId": "p-73",
             "infraction": "Roughing",
@@ -1607,7 +1607,7 @@
           "clockMs": 124000,
           "at": "2026-11-21T07:03:18.978Z",
           "detail": "#88 Boston Smith — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 3000,
           "meta": {
             "playerId": "p-88"
           },
@@ -1619,14 +1619,14 @@
           "clockMs": 114000,
           "at": "2026-11-21T07:03:50.262Z",
           "detail": "#13 Blake Youngen — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 3010,
           "meta": {
             "playerId": "p-13"
           },
           "type": "SHOT"
         }
       ],
-      "videoSeconds": null
+      "videoSeconds": 744
     },
     {
       "id": "GPDX12UA1-1791651789505-IDTW",

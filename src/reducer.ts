@@ -2,6 +2,7 @@ import {
   formatClock,
   formatDurationLabel,
   formatGameStamp,
+  gameElapsedMs,
   manpower,
   videoSecondsFromAnchor,
   minorToEnd,
@@ -448,18 +449,25 @@ export function setEventVideo(game: Game, eventId: string, videoSeconds: number 
   };
 }
 
-export function alignFilm(game: Game, anchorEventId: string, anchorVideoSeconds: number, t: number): Game {
+export function alignFilm(
+  game: Game,
+  anchorEventId: string,
+  anchorVideoSeconds: number,
+  t: number,
+  laterOnly = false,
+): Game {
   const anchor = game.events.find((event) => event.id === anchorEventId);
   if (!anchor) return game;
   const video = Math.max(0, Math.round(anchorVideoSeconds));
+  const anchorElapsed = gameElapsedMs(game, anchor.period, anchor.clockMs);
   return {
     ...game,
     updatedAt: new Date(t).toISOString(),
     videoSeconds: video,
-    events: game.events.map((event) => ({
-      ...event,
-      videoSeconds: videoSecondsFromAnchor(game, anchor, video, event),
-    })),
+    events: game.events.map((event) => {
+      if (laterOnly && gameElapsedMs(game, event.period, event.clockMs) < anchorElapsed) return event;
+      return { ...event, videoSeconds: videoSecondsFromAnchor(game, anchor, video, event) };
+    }),
   };
 }
 

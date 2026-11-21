@@ -10,6 +10,38 @@ export const FILM_TYPES = new Set<EventType>([
   'OPP_PENALTY_SHOT',
 ]);
 
+export type EventTone = 'goal' | 'penalty' | 'save' | 'shot' | 'play' | 'other';
+
+export const EVENT_TONE_LABEL: Record<EventTone, string> = {
+  goal: 'Goals',
+  penalty: 'Penalties',
+  save: 'Saves',
+  shot: 'Shots',
+  play: 'Great plays',
+  other: 'Other',
+};
+
+const TONE_ORDER: EventTone[] = ['goal', 'penalty', 'save', 'shot', 'play', 'other'];
+
+export function eventTone(event: { type: EventType; meta?: { result?: string } }): EventTone {
+  if (event.type === 'GOAL' || event.type === 'OPP_GOAL') return 'goal';
+  if (event.type === 'PENALTY' || event.type === 'OPP_PENALTY' || event.type === 'PENALTY_CLEAR') return 'penalty';
+  if (event.type === 'OPP_SHOT') return 'save';
+  if (event.type === 'SHOT') return 'shot';
+  if (event.type === 'GREAT_PLAY') return 'play';
+  if (event.type === 'PENALTY_SHOT' || event.type === 'OPP_PENALTY_SHOT') {
+    if (event.meta?.result === 'save') return 'save';
+    if (event.meta?.result === 'goal') return 'goal';
+    return 'other';
+  }
+  return 'other';
+}
+
+export function eventTonesPresent(events: Array<{ type: EventType; meta?: { result?: string } }>) {
+  const present = new Set(events.map((event) => eventTone(event)));
+  return TONE_ORDER.filter((tone) => present.has(tone));
+}
+
 export const INFRACTIONS = [
   'Tripping',
   'Hooking',

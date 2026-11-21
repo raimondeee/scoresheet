@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { BoxScore } from '../components/BoxScore.tsx';
 import { EventEditModal } from '../components/EventEdit.tsx';
-import { FILM_TYPES, formatDate, formatGameStamp, readRemaining } from '../hockey.ts';
+import { EventFilter, matchesEventFilter, type EventFilterValue } from '../components/EventFilter.tsx';
+import { FILM_TYPES, eventTone, formatDate, formatGameStamp, readRemaining } from '../hockey.ts';
 import { useApp } from '../store.tsx';
 
 export function Games() {
@@ -56,6 +57,7 @@ export function GameDetail() {
   const [youtube, setYoutube] = useState(game?.youtubeUrl ?? '');
   const [confirm, setConfirm] = useState(false);
   const [eventId, setEventId] = useState<string | null>(null);
+  const [eventFilter, setEventFilter] = useState<EventFilterValue>('all');
   if (!game) {
     return (
       <div className="page">
@@ -100,11 +102,15 @@ export function GameDetail() {
       </section>
       <section className="card">
         <h2>Events</h2>
+        <EventFilter events={game.events} value={eventFilter} onChange={setEventFilter} />
         {game.events.length === 0 ? <p className="empty">No events.</p> : null}
+        {game.events.length > 0 && game.events.every((event) => !matchesEventFilter(event, eventFilter)) ? (
+          <p className="empty">Nothing in this filter.</p>
+        ) : null}
         <ol className="log">
-          {[...game.events].reverse().map((event) => (
+          {[...game.events].reverse().filter((event) => matchesEventFilter(event, eventFilter)).map((event) => (
             <li key={event.id}>
-              <button type="button" className="log-item" onClick={() => setEventId(event.id)}>
+              <button type="button" className={`log-item tone-${eventTone(event)}`} onClick={() => setEventId(event.id)}>
                 <span>{formatGameStamp(event.period, event.clockMs)}</span>
                 <strong>{event.detail}</strong>
               </button>

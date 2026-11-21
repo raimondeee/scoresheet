@@ -67,7 +67,7 @@ type Store = {
   start: (id: string) => void;
   expire: (id: string) => void;
   ourShot: (id: string, playerId: string, video: number | null) => void;
-  oppShot: (id: string) => void;
+  oppShot: (id: string, video: number | null) => void;
   ourGoal: (id: string, input: GoalInput, video: number | null) => void;
   oppGoal: (id: string, input: OppGoalInput, video: number | null) => void;
   ourPenalty: (id: string, input: BoxPenaltyInput, video: number | null) => void;
@@ -86,7 +86,7 @@ type Store = {
   editEvent: (id: string, eventId: string, edit: EventEdit) => void;
   removeEvent: (id: string, eventId: string) => void;
   editYoutube: (id: string, url: string) => void;
-  alignFilm: (id: string, anchorEventId: string, videoSeconds: number) => void;
+  alignFilm: (id: string, anchorEventId: string, videoSeconds: number, laterOnly?: boolean) => void;
   editDressed: (id: string, dressedIds: string[]) => void;
   finish: (id: string) => void;
   undoLast: (id: string) => void;
@@ -214,7 +214,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     expire: (id) => update(id, (game, _roster, t) => (game.clock.running ? pauseClock(game, t) : game)),
     ourShot: (id, playerId, video) =>
       update(id, (game, roster, t) => addOurShot(setVideoSeconds(game, video, t), roster, playerId, t)),
-    oppShot: (id) => update(id, (game, roster, t) => addOppShot(game, roster, t)),
+    oppShot: (id, video) => update(id, (game, roster, t) => addOppShot(setVideoSeconds(game, video, t), roster, t)),
     ourGoal: (id, input, video) =>
       update(id, (game, roster, t) => addOurGoal(withVideo(game, video, t), roster, input, t)),
     oppGoal: (id, input, video) =>
@@ -241,8 +241,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     editEvent: (id, eventId, edit) => update(id, (game, roster, t) => editEvent(game, roster, eventId, edit, t)),
     removeEvent: (id, eventId) => update(id, (game, _roster, t) => removeEvent(game, eventId, t)),
     editYoutube: (id, url) => update(id, (game, _roster, t) => setYoutube(game, url, t)),
-    alignFilm: (id, anchorEventId, videoSeconds) =>
-      update(id, (game, _roster, t) => alignFilm(game, anchorEventId, videoSeconds, t)),
+    alignFilm: (id, anchorEventId, videoSeconds, laterOnly) =>
+      update(id, (game, _roster, t) => alignFilm(game, anchorEventId, videoSeconds, t, laterOnly)),
     editDressed: (id, dressedIds) => update(id, (game, roster, t) => setDressed(game, roster, dressedIds, t)),
     finish: (id) => update(id, (game, _roster, t) => finalizeGame(game, t)),
     undoLast: (id) => update(id, (game, _roster, t) => undo(game, t)),
