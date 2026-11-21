@@ -125,284 +125,6 @@
   "filmLeadSeconds": 10,
   "games": [
     {
-      "id": "g-eqoy8oi3sm",
-      "opponent": "Layout check",
-      "date": "2026-11-21",
-      "homeAway": "home",
-      "youtubeUrl": "",
-      "status": "live",
-      "createdAt": "2026-11-21T08:33:28.246Z",
-      "updatedAt": "2026-11-21T09:09:38.925Z",
-      "finalizedAt": null,
-      "periodLengthsMs": [
-        900000,
-        900000,
-        900000
-      ],
-      "otLengthMs": 300000,
-      "penaltyLengthsMs": {
-        "minor": 120000,
-        "major": 240000,
-        "misconduct": 600000
-      },
-      "clock": {
-        "period": 1,
-        "running": true,
-        "remainingMs": 268086,
-        "anchorEpoch": 1795252178925,
-        "anchorRemainingMs": 268086
-      },
-      "starterGoalieId": "p-1",
-      "goalieId": "p-1",
-      "lastGoalieId": "p-1",
-      "goalieMs": {
-        "p-1": 631914
-      },
-      "dressedIds": [
-        "p-1",
-        "p-3",
-        "p-10",
-        "p-13",
-        "p-14",
-        "p-16",
-        "p-17",
-        "p-18",
-        "p-19",
-        "p-44",
-        "p-71",
-        "p-73",
-        "p-77",
-        "p-86",
-        "p-88",
-        "p-89",
-        "p-98"
-      ],
-      "playerSnapshots": {
-        "p-1": {
-          "number": "1",
-          "first": "Emmett",
-          "last": "Sawchuk",
-          "position": "G"
-        },
-        "p-3": {
-          "number": "3",
-          "first": "Carson",
-          "last": "Bader",
-          "position": "F"
-        },
-        "p-10": {
-          "number": "10",
-          "first": "Kaden",
-          "last": "Lasota",
-          "position": "F"
-        },
-        "p-13": {
-          "number": "13",
-          "first": "Blake",
-          "last": "Youngen",
-          "position": "F"
-        },
-        "p-14": {
-          "number": "14",
-          "first": "Curtis",
-          "last": "Moyer",
-          "position": "F"
-        },
-        "p-16": {
-          "number": "16",
-          "first": "Sutter",
-          "last": "Robinson",
-          "position": "D"
-        },
-        "p-17": {
-          "number": "17",
-          "first": "Christopher",
-          "last": "Mahan",
-          "position": "G"
-        },
-        "p-18": {
-          "number": "18",
-          "first": "Andrew",
-          "last": "Raimondi",
-          "position": "D"
-        },
-        "p-19": {
-          "number": "19",
-          "first": "Leo",
-          "last": "Krebsbach",
-          "position": "F"
-        },
-        "p-44": {
-          "number": "44",
-          "first": "Everett",
-          "last": "Lee",
-          "position": "F"
-        },
-        "p-71": {
-          "number": "71",
-          "first": "Declan",
-          "last": "Rayner",
-          "position": "F"
-        },
-        "p-73": {
-          "number": "73",
-          "first": "Calvin",
-          "last": "Lind",
-          "position": "D"
-        },
-        "p-77": {
-          "number": "77",
-          "first": "Alex",
-          "last": "Poulin",
-          "position": "F"
-        },
-        "p-86": {
-          "number": "86",
-          "first": "Jeremy",
-          "last": "Brown",
-          "position": "D"
-        },
-        "p-88": {
-          "number": "88",
-          "first": "Boston",
-          "last": "Smith",
-          "position": "D"
-        },
-        "p-89": {
-          "number": "89",
-          "first": "Dellas",
-          "last": "Potter",
-          "position": "F"
-        },
-        "p-98": {
-          "number": "98",
-          "first": "Hudson",
-          "last": "Bauer",
-          "position": "F"
-        }
-      },
-      "scoreUs": 2,
-      "scoreOpp": 1,
-      "sogUs": 3,
-      "sogOpp": 1,
-      "penalties": [],
-      "events": [
-        {
-          "id": "e-lc8dcnj7ty",
-          "period": 1,
-          "clockMs": 895603,
-          "at": "2026-11-21T08:34:20.133Z",
-          "videoSeconds": null,
-          "type": "SHOT",
-          "detail": "#10 Kaden Lasota — On goal",
-          "meta": {
-            "playerId": "p-10"
-          }
-        },
-        {
-          "id": "e-n8u33ljked",
-          "period": 1,
-          "clockMs": 887619,
-          "at": "2026-11-21T08:34:36.420Z",
-          "videoSeconds": null,
-          "type": "GOAL",
-          "detail": "#13 Blake Youngen — A: #3 Carson Bader, #14 Curtis Moyer · EV",
-          "meta": {
-            "scorerId": "p-13",
-            "assist1Id": "p-3",
-            "assist2Id": "p-14",
-            "onIceIds": [
-              "p-13",
-              "p-3",
-              "p-14",
-              "p-44",
-              "p-71"
-            ],
-            "strength": "EV",
-            "plusMinus": "plus",
-            "goalieId": "p-1",
-            "emptyNet": false,
-            "endedPenalty": null
-          }
-        },
-        {
-          "id": "e-cmx8epk1sa",
-          "period": 1,
-          "clockMs": 874087,
-          "at": "2026-11-21T08:34:58.953Z",
-          "videoSeconds": null,
-          "type": "OPP_PENALTY",
-          "detail": "Opponent — Tripping (2:00)",
-          "meta": {
-            "playerId": null,
-            "infraction": "Tripping",
-            "kind": "minor",
-            "pimMs": 120000,
-            "penaltyIds": [
-              "pen-d23hqxk1s9"
-            ],
-            "openedPp": true,
-            "openedPk": false
-          }
-        },
-        {
-          "id": "e-tbv44xm9oj",
-          "period": 1,
-          "clockMs": 845747,
-          "at": "2026-11-21T08:36:42.499Z",
-          "videoSeconds": null,
-          "type": "GOAL",
-          "detail": "#18 Andrew Raimondi — A: #3 Carson Bader · PP · minor ended",
-          "meta": {
-            "scorerId": "p-18",
-            "assist1Id": "p-3",
-            "assist2Id": null,
-            "onIceIds": [],
-            "strength": "PP",
-            "plusMinus": "none",
-            "goalieId": "p-1",
-            "emptyNet": false,
-            "endedPenalty": {
-              "id": "pen-d23hqxk1s9",
-              "side": "opp",
-              "playerId": null,
-              "infraction": "Tripping",
-              "kind": "minor",
-              "durationMs": 120000,
-              "remainingMs": 91660,
-              "affectsStrength": true,
-              "endsOnGoal": true
-            }
-          }
-        },
-        {
-          "id": "e-m5fbqpmjir",
-          "period": 1,
-          "clockMs": 843763,
-          "at": "2026-11-21T08:36:55.251Z",
-          "videoSeconds": null,
-          "type": "OPP_GOAL",
-          "detail": "Opponent · EV",
-          "meta": {
-            "oppNumber": "",
-            "onIceIds": [
-              "p-10",
-              "p-13",
-              "p-14",
-              "p-16",
-              "p-77"
-            ],
-            "strength": "EV",
-            "plusMinus": "minus",
-            "goalieId": "p-1",
-            "emptyNet": false,
-            "endedPenalty": null
-          }
-        }
-      ],
-      "videoSeconds": null
-    },
-    {
       "id": "GPDX12UA1-1791424936209-QFDO",
       "opponent": "Spokane Chiefs",
       "date": "2026-10-08",
@@ -8184,7 +7906,7 @@
       "youtubeUrl": "https://youtu.be/230B3l6lDng?is=xl3sSi0mun17W73E",
       "status": "final",
       "createdAt": "2026-09-12T05:22:48.105Z",
-      "updatedAt": "2026-09-14T01:43:24.979Z",
+      "updatedAt": "2026-11-21T18:08:56.724Z",
       "finalizedAt": "2026-09-14T01:43:24.979Z",
       "periodLengthsMs": [
         900000,
@@ -8338,7 +8060,7 @@
           "clockMs": 199000,
           "at": "2026-09-12T05:25:53.073Z",
           "detail": "#16 Sutter Robinson — Unassisted • EV",
-          "videoSeconds": 174,
+          "videoSeconds": 1164,
           "meta": {
             "scorerId": "p-16",
             "assist1Id": null,
@@ -8364,7 +8086,7 @@
           "clockMs": 743000,
           "at": "2026-09-13T18:52:32.441Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 620,
           "meta": {
             "playerId": "p-3"
           },
@@ -8376,7 +8098,7 @@
           "clockMs": 739000,
           "at": "2026-09-13T18:56:17.815Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 624,
           "meta": {
             "playerId": "p-89"
           },
@@ -8388,7 +8110,7 @@
           "clockMs": 656000,
           "at": "2026-09-13T19:02:14.547Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 707,
           "meta": {
             "playerId": "p-73"
           },
@@ -8400,7 +8122,7 @@
           "clockMs": 567000,
           "at": "2026-09-13T19:06:59.930Z",
           "detail": "#77 Alex Poulin — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 796,
           "meta": {
             "playerId": "p-77"
           },
@@ -8412,7 +8134,7 @@
           "clockMs": 516000,
           "at": "2026-09-13T19:13:38.060Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 847,
           "meta": {
             "playerId": "p-73"
           },
@@ -8424,7 +8146,7 @@
           "clockMs": 480000,
           "at": "2026-09-13T19:14:52.950Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 883,
           "meta": {
             "goalieId": "p-1"
           },
@@ -8436,7 +8158,7 @@
           "clockMs": 430000,
           "at": "2026-09-13T19:18:18.704Z",
           "detail": "#88 Boston Smith — Tripping (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 933,
           "meta": {
             "playerId": "p-88",
             "infraction": "Tripping",
@@ -8456,7 +8178,7 @@
           "clockMs": 419000,
           "at": "2026-09-13T19:19:08.478Z",
           "detail": "#71 Declan Rayner — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 944,
           "meta": {
             "playerId": "p-71"
           },
@@ -8468,7 +8190,7 @@
           "clockMs": 407000,
           "at": "2026-09-13T19:20:55.178Z",
           "detail": "#3 Carson Bader — Interference (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 956,
           "meta": {
             "playerId": "p-3",
             "infraction": "Interference",
@@ -8488,7 +8210,7 @@
           "clockMs": 344000,
           "at": "2026-09-13T19:22:21.379Z",
           "detail": "#77 Alex Poulin — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1019,
           "meta": {
             "playerId": "p-77"
           },
@@ -8500,7 +8222,7 @@
           "clockMs": 289000,
           "at": "2026-09-13T19:24:27.235Z",
           "detail": "#10 Kaden Lasota — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1074,
           "meta": {
             "playerId": "p-10"
           },
@@ -8512,7 +8234,7 @@
           "clockMs": 275000,
           "at": "2026-09-13T19:25:28.831Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1088,
           "meta": {
             "playerId": "p-89"
           },
@@ -8524,7 +8246,7 @@
           "clockMs": 245000,
           "at": "2026-09-13T19:26:07.519Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 1118,
           "meta": {
             "goalieId": "p-1"
           },
@@ -8536,7 +8258,7 @@
           "clockMs": 174000,
           "at": "2026-09-13T22:01:56.843Z",
           "detail": "#98 Hudson Bauer — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1189,
           "meta": {
             "playerId": "p-98"
           },
@@ -8548,7 +8270,7 @@
           "clockMs": 121000,
           "at": "2026-09-13T22:03:28.477Z",
           "detail": "#14 Curtis Moyer — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1242,
           "meta": {
             "playerId": "p-14"
           },
@@ -8560,7 +8282,7 @@
           "clockMs": 58000,
           "at": "2026-09-13T22:06:14.225Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1305,
           "meta": {
             "playerId": "p-3"
           },
@@ -8572,7 +8294,7 @@
           "clockMs": 52000,
           "at": "2026-09-13T22:07:10.274Z",
           "detail": "#13 Blake Youngen — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1311,
           "meta": {
             "playerId": "p-13"
           },
@@ -8584,7 +8306,7 @@
           "clockMs": 39000,
           "at": "2026-09-13T22:07:40.646Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1324,
           "meta": {
             "playerId": "p-73"
           },
@@ -8596,7 +8318,7 @@
           "clockMs": 900000,
           "at": "2026-09-13T22:09:58.776Z",
           "detail": "2ND PERIOD ready — 15:00",
-          "videoSeconds": null,
+          "videoSeconds": 1363,
           "meta": {
             "previousPeriod": 1
           },
@@ -8608,7 +8330,7 @@
           "clockMs": 772000,
           "at": "2026-09-13T22:22:21.636Z",
           "detail": "2ND PERIOD length changed 15:00 → 13:00",
-          "videoSeconds": null,
+          "videoSeconds": 1371,
           "meta": {},
           "type": "CLOCK"
         },
@@ -8618,7 +8340,7 @@
           "clockMs": 742000,
           "at": "2026-09-13T22:25:46.415Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1401,
           "meta": {
             "playerId": "p-89"
           },
@@ -8630,7 +8352,7 @@
           "clockMs": 736000,
           "at": "2026-09-13T22:26:00.510Z",
           "detail": "#19 Leo Krebsbach — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1407,
           "meta": {
             "playerId": "p-19"
           },
@@ -8642,7 +8364,7 @@
           "clockMs": 723000,
           "at": "2026-09-13T22:43:11.619Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1420,
           "meta": {
             "playerId": "p-3"
           },
@@ -8654,7 +8376,7 @@
           "clockMs": 697000,
           "at": "2026-09-13T22:43:56.521Z",
           "detail": "#13 Blake Youngen — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1446,
           "meta": {
             "playerId": "p-13"
           },
@@ -8666,7 +8388,7 @@
           "clockMs": 654000,
           "at": "2026-09-13T22:45:24.675Z",
           "detail": "#77 Alex Poulin — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1489,
           "meta": {
             "playerId": "p-77"
           },
@@ -8678,7 +8400,7 @@
           "clockMs": 623000,
           "at": "2026-09-13T22:47:04.957Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1520,
           "meta": {
             "playerId": "p-73"
           },
@@ -8690,7 +8412,7 @@
           "clockMs": 581000,
           "at": "2026-09-13T22:51:35.696Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1562,
           "meta": {
             "playerId": "p-89"
           },
@@ -8702,7 +8424,7 @@
           "clockMs": 564000,
           "at": "2026-09-13T22:52:02.266Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1579,
           "meta": {
             "playerId": "p-89"
           },
@@ -8714,7 +8436,7 @@
           "clockMs": 549000,
           "at": "2026-09-13T22:57:29.260Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1594,
           "meta": {
             "playerId": "p-18"
           },
@@ -8726,7 +8448,7 @@
           "clockMs": 511000,
           "at": "2026-09-13T23:04:15.947Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1632,
           "meta": {
             "playerId": "p-89"
           },
@@ -8738,7 +8460,7 @@
           "clockMs": 511000,
           "at": "2026-09-13T23:11:44.482Z",
           "detail": "Opponent — Interference (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1632,
           "meta": {
             "playerId": null,
             "infraction": "Interference",
@@ -8758,7 +8480,7 @@
           "clockMs": 503000,
           "at": "2026-09-13T23:12:03.125Z",
           "detail": "#16 Sutter Robinson — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1640,
           "meta": {
             "playerId": "p-16"
           },
@@ -8770,7 +8492,7 @@
           "clockMs": 451000,
           "at": "2026-09-13T23:55:23.156Z",
           "detail": "#13 Blake Youngen — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1692,
           "meta": {
             "playerId": "p-13"
           },
@@ -8782,7 +8504,7 @@
           "clockMs": 427000,
           "at": "2026-09-13T23:56:39.066Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 1716,
           "meta": {
             "goalieId": "p-1"
           },
@@ -8794,7 +8516,7 @@
           "clockMs": 400000,
           "at": "2026-09-13T23:57:39.145Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1743,
           "meta": {
             "playerId": "p-73"
           },
@@ -8806,7 +8528,7 @@
           "clockMs": 383000,
           "at": "2026-09-13T23:58:13.924Z",
           "detail": "#73 Calvin Lind — Tripping (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1760,
           "meta": {
             "playerId": "p-73",
             "infraction": "Tripping",
@@ -8826,7 +8548,7 @@
           "clockMs": 330000,
           "at": "2026-09-14T00:01:36.843Z",
           "detail": "#71 Declan Rayner — Slashing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1813,
           "meta": {
             "playerId": "p-71",
             "infraction": "Slashing",
@@ -8846,7 +8568,7 @@
           "clockMs": 263000,
           "at": "2026-09-14T00:03:05.989Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 1880,
           "meta": {
             "goalieId": "p-1"
           },
@@ -8858,7 +8580,7 @@
           "clockMs": 250000,
           "at": "2026-09-14T00:04:16.539Z",
           "detail": "#13 Blake Youngen — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 1893,
           "meta": {
             "playerId": "p-13"
           },
@@ -8870,7 +8592,7 @@
           "clockMs": 250000,
           "at": "2026-09-14T00:04:47.043Z",
           "detail": "Opponent — Hooking (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 1893,
           "meta": {
             "playerId": null,
             "infraction": "Hooking",
@@ -8890,7 +8612,7 @@
           "clockMs": 140000,
           "at": "2026-09-14T00:11:14.890Z",
           "detail": "Opponent — Roughing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2003,
           "meta": {
             "playerId": null,
             "infraction": "Roughing",
@@ -8910,7 +8632,7 @@
           "clockMs": 83000,
           "at": "2026-09-14T00:22:55.649Z",
           "detail": "#14 Curtis Moyer — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2060,
           "meta": {
             "playerId": "p-14"
           },
@@ -8922,7 +8644,7 @@
           "clockMs": 56000,
           "at": "2026-09-14T00:27:47.622Z",
           "detail": "#19 Leo Krebsbach — A: #73 Calvin Lind • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2087,
           "meta": {
             "scorerId": "p-19",
             "assist1Id": "p-73",
@@ -8948,7 +8670,7 @@
           "clockMs": 30000,
           "at": "2026-09-14T00:33:26.047Z",
           "detail": "#19 Leo Krebsbach — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2113,
           "meta": {
             "playerId": "p-19"
           },
@@ -8960,7 +8682,7 @@
           "clockMs": 780000,
           "at": "2026-09-14T00:34:49.680Z",
           "detail": "3RD PERIOD ready — 13:00",
-          "videoSeconds": null,
+          "videoSeconds": 2143,
           "meta": {
             "previousPeriod": 2
           },
@@ -8972,7 +8694,7 @@
           "clockMs": 759000,
           "at": "2026-09-14T00:35:28.909Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2164,
           "meta": {
             "playerId": "p-73"
           },
@@ -8984,7 +8706,7 @@
           "clockMs": 759000,
           "at": "2026-09-14T00:36:27.396Z",
           "detail": "#13 Blake Youngen — A: #73 Calvin Lind • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2164,
           "meta": {
             "scorerId": "p-13",
             "assist1Id": "p-73",
@@ -9010,7 +8732,7 @@
           "clockMs": 749000,
           "at": "2026-09-14T00:45:46.270Z",
           "detail": "#77 Alex Poulin — Slashing (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2174,
           "meta": {
             "playerId": "p-77",
             "infraction": "Slashing",
@@ -9030,7 +8752,7 @@
           "clockMs": 705000,
           "at": "2026-09-14T00:47:15.552Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2218,
           "meta": {
             "playerId": "p-3"
           },
@@ -9042,7 +8764,7 @@
           "clockMs": 695000,
           "at": "2026-09-14T00:48:16.272Z",
           "detail": "#13 Blake Youngen — Misconduct (10:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2228,
           "meta": {
             "playerId": "p-13",
             "infraction": "Misconduct",
@@ -9062,7 +8784,7 @@
           "clockMs": 695000,
           "at": "2026-09-14T00:53:33.355Z",
           "detail": "#13 Blake Youngen — Interference (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2228,
           "meta": {
             "playerId": "p-13",
             "infraction": "Interference",
@@ -9082,7 +8804,7 @@
           "clockMs": 681000,
           "at": "2026-09-14T01:00:55.660Z",
           "detail": "#10 Kaden Lasota — Unassisted • SH",
-          "videoSeconds": null,
+          "videoSeconds": 2242,
           "meta": {
             "scorerId": "p-10",
             "assist1Id": null,
@@ -9106,7 +8828,7 @@
           "clockMs": 534000,
           "at": "2026-09-14T01:09:05.971Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2389,
           "meta": {
             "playerId": "p-18"
           },
@@ -9118,7 +8840,7 @@
           "clockMs": 456000,
           "at": "2026-09-14T01:13:53.823Z",
           "detail": "#3 Carson Bader — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2467,
           "meta": {
             "playerId": "p-3"
           },
@@ -9130,7 +8852,7 @@
           "clockMs": 456000,
           "at": "2026-09-14T01:16:47.437Z",
           "detail": "#3 Carson Bader — A: #16 Sutter Robinson • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2467,
           "meta": {
             "scorerId": "p-3",
             "assist1Id": "p-16",
@@ -9156,7 +8878,7 @@
           "clockMs": 381000,
           "at": "2026-09-14T01:19:25.552Z",
           "detail": "#77 Alex Poulin — Interference (03:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2542,
           "meta": {
             "playerId": "p-77",
             "infraction": "Interference",
@@ -9176,7 +8898,7 @@
           "clockMs": 341000,
           "at": "2026-09-14T01:21:11.160Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 2582,
           "meta": {
             "goalieId": "p-1"
           },
@@ -9188,7 +8910,7 @@
           "clockMs": 320000,
           "at": "2026-09-14T01:22:03.093Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2603,
           "meta": {
             "playerId": "p-73"
           },
@@ -9200,7 +8922,7 @@
           "clockMs": 295000,
           "at": "2026-09-14T01:22:45.450Z",
           "detail": "#73 Calvin Lind — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2628,
           "meta": {
             "playerId": "p-73"
           },
@@ -9212,7 +8934,7 @@
           "clockMs": 282000,
           "at": "2026-09-14T01:26:02.118Z",
           "detail": "#73 Calvin Lind — Interference (02:00)",
-          "videoSeconds": null,
+          "videoSeconds": 2641,
           "meta": {
             "playerId": "p-73",
             "infraction": "Interference",
@@ -9232,7 +8954,7 @@
           "clockMs": 233000,
           "at": "2026-09-14T01:27:15.402Z",
           "detail": "#18 Andrew Raimondi — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2690,
           "meta": {
             "playerId": "p-18"
           },
@@ -9244,7 +8966,7 @@
           "clockMs": 194000,
           "at": "2026-09-14T01:34:22.898Z",
           "detail": "Save — Emmett Sawchuk",
-          "videoSeconds": null,
+          "videoSeconds": 2729,
           "meta": {
             "goalieId": "p-1"
           },
@@ -9256,7 +8978,7 @@
           "clockMs": 67000,
           "at": "2026-09-14T01:38:21.535Z",
           "detail": "#88 Boston Smith — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2856,
           "meta": {
             "playerId": "p-88"
           },
@@ -9268,7 +8990,7 @@
           "clockMs": 43000,
           "at": "2026-09-14T01:41:38.086Z",
           "detail": "#89 Dellas Potter — On goal",
-          "videoSeconds": null,
+          "videoSeconds": 2880,
           "meta": {
             "playerId": "p-89"
           },
@@ -9280,7 +9002,7 @@
           "clockMs": 41000,
           "at": "2026-09-14T01:42:23.010Z",
           "detail": "#71 Declan Rayner — A: #89 Dellas Potter, #18 Andrew Raimondi • EV",
-          "videoSeconds": null,
+          "videoSeconds": 2882,
           "meta": {
             "scorerId": "p-71",
             "assist1Id": "p-89",
@@ -9301,7 +9023,7 @@
           "type": "GOAL"
         }
       ],
-      "videoSeconds": null
+      "videoSeconds": 1164
     }
   ]
 }
