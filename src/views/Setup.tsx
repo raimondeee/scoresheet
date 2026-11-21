@@ -30,30 +30,27 @@ function ClockPair({
 }) {
   const parts = split(value);
   return (
-    <fieldset className="field">
-      <legend>{label}</legend>
-      <div className="pair">
-        <label>
-          Minutes
-          <input
-            type="number"
-            min={0}
-            value={parts.minutes}
-            onChange={(event) => onChange(join(Number(event.target.value), parts.seconds))}
-          />
-        </label>
-        <label>
-          Seconds
-          <input
-            type="number"
-            min={0}
-            max={59}
-            value={parts.seconds}
-            onChange={(event) => onChange(join(parts.minutes, Number(event.target.value)))}
-          />
-        </label>
+    <div className="length-line">
+      <span>{label}</span>
+      <div className="length-time">
+        <input
+          type="number"
+          min={0}
+          aria-label={`${label} minutes`}
+          value={parts.minutes}
+          onChange={(event) => onChange(join(Number(event.target.value), parts.seconds))}
+        />
+        <span aria-hidden="true">:</span>
+        <input
+          type="number"
+          min={0}
+          max={59}
+          aria-label={`${label} seconds`}
+          value={parts.seconds}
+          onChange={(event) => onChange(join(parts.minutes, Number(event.target.value)))}
+        />
       </div>
-    </fieldset>
+    </div>
   );
 }
 
@@ -144,19 +141,25 @@ export function Setup() {
             placeholder="https://www.youtube.com/watch?v=…"
           />
         </label>
-        <div className="form-grid">
-          {([0, 1, 2] as const).map((index) => (
-            <ClockPair
-              key={index}
-              label={`${['1st', '2nd', '3rd'][index]} period`}
-              value={periods[index]}
-              onChange={(ms) => setPeriods((current) => current.map((item, i) => (i === index ? ms : item)) as [number, number, number])}
-            />
-          ))}
-          <ClockPair label="Overtime" value={ot} onChange={setOt} />
-          <ClockPair label="Minor" value={minor} onChange={setMinor} />
-          <ClockPair label="Major" value={major} onChange={setMajor} />
-          <ClockPair label="Misconduct" value={misconduct} onChange={setMisconduct} />
+        <div className="length-columns">
+          <div className="length-column">
+            <h2>Periods</h2>
+            {([0, 1, 2] as const).map((index) => (
+              <ClockPair
+                key={index}
+                label={`${['1st', '2nd', '3rd'][index]} Period`}
+                value={periods[index]}
+                onChange={(ms) => setPeriods((current) => current.map((item, i) => (i === index ? ms : item)) as [number, number, number])}
+              />
+            ))}
+            <ClockPair label="Overtime" value={ot} onChange={setOt} />
+          </div>
+          <div className="length-column">
+            <h2>Penalties</h2>
+            <ClockPair label="Minor" value={minor} onChange={setMinor} />
+            <ClockPair label="Major" value={major} onChange={setMajor} />
+            <ClockPair label="Misconduct" value={misconduct} onChange={setMisconduct} />
+          </div>
         </div>
         <div>
           <h2>Starting goalie</h2>
