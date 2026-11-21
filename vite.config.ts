@@ -154,6 +154,7 @@ function scorebookApi(): Plugin {
 }
 
 export default defineConfig({
+  base: process.env.BASE_PATH || '/',
   plugins: [react(), scorebookApi()],
   server: { port: 5173, strictPort: true },
 });

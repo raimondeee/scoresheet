@@ -132,7 +132,7 @@
       "youtubeUrl": "",
       "status": "live",
       "createdAt": "2026-11-21T08:33:28.246Z",
-      "updatedAt": "2026-11-21T09:08:54.067Z",
+      "updatedAt": "2026-11-21T09:09:38.925Z",
       "finalizedAt": null,
       "periodLengthsMs": [
         900000,
@@ -148,15 +148,15 @@
       "clock": {
         "period": 1,
         "running": true,
-        "remainingMs": 312944,
-        "anchorEpoch": 1795252134067,
-        "anchorRemainingMs": 312944
+        "remainingMs": 268086,
+        "anchorEpoch": 1795252178925,
+        "anchorRemainingMs": 268086
       },
       "starterGoalieId": "p-1",
       "goalieId": "p-1",
       "lastGoalieId": "p-1",
       "goalieMs": {
-        "p-1": 587056
+        "p-1": 631914
       },
       "dressedIds": [
         "p-1",
