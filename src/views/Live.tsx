@@ -147,18 +147,27 @@ export function Live() {
   const [videoText, setVideoText] = useState('');
   const [showFilm, setShowFilm] = useState(false);
   const [link, setLink] = useState('');
+  const [tap, setTap] = useState<string | null>(null);
+  const [filmPauseAt, setFilmPauseAt] = useState<number | null>(null);
   const videoRef = useRef(videoText);
   videoRef.current = videoText;
   const playerRef = useRef<FilmPlayerHandle>(null);
   const stampRef = useRef<number | null>(null);
   const expireLock = useRef(false);
+  const tapTimer = useRef<number | null>(null);
 
   useEffect(() => {
     setVideoText(game?.videoSeconds == null ? '' : formatVideo(game.videoSeconds));
     setLink(game?.youtubeUrl ?? '');
     setShowFilm(false);
     setWizard(null);
+    setFilmPauseAt(null);
+    setTap(null);
   }, [game?.id]);
+
+  useEffect(() => () => {
+    if (tapTimer.current != null) window.clearTimeout(tapTimer.current);
+  }, []);
 
   useEffect(() => {
     if (!showFilm) return;
@@ -238,6 +247,20 @@ export function Live() {
     stampRef.current = readPlayhead();
   }
 
+  function flash(id: string) {
+    setTap(id);
+    if (tapTimer.current != null) window.clearTimeout(tapTimer.current);
+    tapTimer.current = window.setTimeout(() => {
+      setTap(null);
+      tapTimer.current = null;
+    }, 240);
+  }
+
+  function rememberFilmPause() {
+    const at = playerRef.current?.time() ?? readPlayhead();
+    if (at != null) setFilmPauseAt(at);
+  }
+
   function begin(next: Wizard) {
     if (next.type === 'goal' || next.type === 'opp-goal' || next.type === 'penalty') holdStamp();
     app.pause(game!.id);
@@ -309,6 +332,7 @@ export function Live() {
                   videoId={filmId}
                   start={game.videoSeconds ?? 0}
                   onPause={() => {
+                    rememberFilmPause();
                     if (game.clock.running) app.pause(game.id);
                   }}
                 />
@@ -354,10 +378,26 @@ export function Live() {
             type="button"
             className={game.clock.running ? 'clock-btn run' : 'clock-btn pause'}
             disabled={periodOver}
-            onClick={() => (game.clock.running ? app.pause(game.id) : app.start(game.id))}
+            onClick={() => {
+              if (game.clock.running) app.pause(game.id);
+              else {
+                setFilmPauseAt(null);
+                app.start(game.id);
+              }
+            }}
           >
             {periodOver ? 'Period over' : game.clock.running ? 'Stop clock' : 'Start clock'}
           </button>
+          {filmPauseAt != null && !game.clock.running ? (
+            <p className="pause-mark">
+              <span>Paused film at {formatVideo(filmPauseAt)}</span>
+              {showFilm && filmId ? (
+                <button type="button" onClick={() => playerRef.current?.seek(filmPauseAt)}>
+                  Return
+                </button>
+              ) : null}
+            </p>
+          ) : null}
           <p className="clock-hint">Green means paused. The page goes dark while the clock is running.</p>
           <div className="clock-links">
             <button type="button" onClick={() => begin({ type: 'clock' })}>
@@ -441,7 +481,14 @@ export function Live() {
               Our shot
               <small>Clock keeps running</small>
             </button>
-            <button type="button" className="action opp-shot" onClick={() => app.oppShot(game.id, videoNow())}>
+            <button
+              type="button"
+              className={`action opp-shot${tap === 'opp-shot' ? ' tapped' : ''}`}
+              onClick={() => {
+                app.oppShot(game.id, videoNow());
+                flash('opp-shot');
+              }}
+            >
               Opp shot
               <small>Clock keeps running</small>
             </button>
@@ -487,11 +534,25 @@ export function Live() {
               Opp penalty
               <small>Pauses clock</small>
             </button>
-            <button type="button" className="action great" onClick={() => app.greatPlay(game.id, '', videoNow())}>
+            <button
+              type="button"
+              className={`action great${tap === 'great' ? ' tapped' : ''}`}
+              onClick={() => {
+                app.greatPlay(game.id, '', videoNow());
+                flash('great');
+              }}
+            >
               Great play
               <small>Stamps the time</small>
             </button>
-            <button type="button" className="action box" onClick={() => document.getElementById('box-score')?.scrollIntoView({ behavior: 'smooth' })}>
+            <button
+              type="button"
+              className={`action box${tap === 'box' ? ' tapped' : ''}`}
+              onClick={() => {
+                document.getElementById('box-score')?.scrollIntoView({ behavior: 'smooth' });
+                flash('box');
+              }}
+            >
               Box score
               <small>Clock keeps running</small>
             </button>

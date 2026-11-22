@@ -2,11 +2,14 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 
 export type FilmPlayerHandle = {
   seconds: () => number | null;
+  time: () => number | null;
+  seek: (seconds: number) => void;
 };
 
 type YtPlayer = {
   destroy: () => void;
   getCurrentTime: () => number;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
 };
 
 type YtNamespace = {
@@ -51,6 +54,16 @@ function loadYouTubeApi() {
 const PLAYING = 1;
 const PAUSED = 2;
 
+function readPlayerTime(player: YtPlayer | null) {
+  if (!player) return null;
+  try {
+    const time = player.getCurrentTime();
+    return typeof time === 'number' && Number.isFinite(time) ? time : null;
+  } catch {
+    return null;
+  }
+}
+
 export const FilmPlayer = forwardRef<FilmPlayerHandle, { videoId: string; start: number; onPause?: () => void }>(
   function FilmPlayer({ videoId, start, onPause }, ref) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -60,13 +73,17 @@ export const FilmPlayer = forwardRef<FilmPlayerHandle, { videoId: string; start:
 
   useImperativeHandle(ref, () => ({
     seconds: () => {
+      const time = readPlayerTime(playerRef.current);
+      return time == null ? null : Math.round(time);
+    },
+    time: () => readPlayerTime(playerRef.current),
+    seek: (seconds: number) => {
       const player = playerRef.current;
-      if (!player) return null;
+      if (!player || !Number.isFinite(seconds)) return;
       try {
-        const time = player.getCurrentTime();
-        return typeof time === 'number' && Number.isFinite(time) ? Math.round(time) : null;
+        player.seekTo(Math.max(0, seconds), true);
       } catch {
-        return null;
+        /* The player can reject a seek before it is ready. */
       }
     },
   }));
