@@ -1,4 +1,5 @@
 import {
+  clockElapsed,
   formatClock,
   formatDurationLabel,
   formatGameStamp,
@@ -8,12 +9,14 @@ import {
   minorToEnd,
   playerName,
   plusMinusFor,
+  readPenaltyRemaining,
   readRemaining,
   strengthOf,
   uid,
 } from './hockey.ts';
 import type {
   ActivePenalty,
+  BoardMark,
   AppState,
   BoxPenaltyInput,
   EventEdit,
@@ -29,6 +32,32 @@ import type {
   Player,
   PlayerSnapshot,
 } from './types.ts';
+
+function boardOf(game: Game, event: GameEvent, t: number): BoardMark {
+  const freshIds = new Set(event.meta.penaltyIds ?? []);
+  const elapsed = clockElapsed(game.clock, t);
+  const goalieMs = { ...game.goalieMs };
+  if (elapsed > 0 && game.goalieId) goalieMs[game.goalieId] = (goalieMs[game.goalieId] || 0) + elapsed;
+  return {
+    scoreUs: game.scoreUs,
+    scoreOpp: game.scoreOpp,
+    sogUs: game.sogUs,
+    sogOpp: game.sogOpp,
+    goalieId: game.goalieId,
+    goalieMs,
+    penalties: game.penalties
+      .map((penalty) => ({
+        ...penalty,
+        remainingMs: freshIds.has(penalty.id) ? penalty.remainingMs : readPenaltyRemaining(penalty, game.clock, t),
+      }))
+      .filter((penalty) => penalty.remainingMs > 0),
+  };
+}
+
+function append(game: Game, event: GameEvent, t: number): Game {
+  const marked: GameEvent = { ...event, meta: { ...event.meta, board: boardOf(game, event, t) } };
+  return { ...game, events: [...game.events, marked], updatedAt: new Date(t).toISOString() };
+}
 
 function stampEvent(
   game: Game,
@@ -171,7 +200,7 @@ export function addOurShot(game: Game, roster: Player[], playerId: string, t: nu
     detail: `${playerName(player)} — On goal`,
     meta: { playerId },
   });
-  return { ...next, sogUs: next.sogUs + 1, events: [...next.events, event] };
+  return append({ ...next, sogUs: next.sogUs + 1 }, event, t);
 }
 
 export function addOppShot(game: Game, roster: Player[], t: number): Game {
@@ -183,7 +212,7 @@ export function addOppShot(game: Game, roster: Player[], t: number): Game {
     detail,
     meta: { goalieId: game.goalieId },
   });
-  return { ...next, sogOpp: next.sogOpp + 1, events: [...next.events, event] };
+  return append({ ...next, sogOpp: next.sogOpp + 1 }, event, t);
 }
 
 export function addOurGoal(game: Game, roster: Player[], input: GoalInput, t: number): Game {
@@ -214,13 +243,7 @@ export function addOurGoal(game: Game, roster: Player[], input: GoalInput, t: nu
       endedPenalty: ended,
     },
   });
-  return {
-    ...next,
-    penalties,
-    scoreUs: next.scoreUs + 1,
-    sogUs: next.sogUs + 1,
-    events: [...next.events, event],
-  };
+  return append({ ...next, penalties, scoreUs: next.scoreUs + 1, sogUs: next.sogUs + 1 }, event, t);
 }
 
 export function addOppGoal(game: Game, roster: Player[], input: OppGoalInput, t: number): Game {
@@ -247,13 +270,7 @@ export function addOppGoal(game: Game, roster: Player[], input: OppGoalInput, t:
       endedPenalty: ended,
     },
   });
-  return {
-    ...next,
-    penalties,
-    scoreOpp: next.scoreOpp + 1,
-    sogOpp: next.sogOpp + 1,
-    events: [...next.events, event],
-  };
+  return append({ ...next, penalties, scoreOpp: next.scoreOpp + 1, sogOpp: next.sogOpp + 1 }, event, t);
 }
 
 function penaltyLength(game: Game, kind: PenaltyKind) {
@@ -315,7 +332,7 @@ function addBoxedPenalty(
       openedPk,
     },
   });
-  return { ...next, penalties: [...next.penalties, ...created], events: [...next.events, event] };
+  return append({ ...next, penalties: [...next.penalties, ...created] }, event, t);
 }
 
 export function addOurPenalty(game: Game, roster: Player[], input: BoxPenaltyInput, t: number) {
@@ -336,12 +353,15 @@ export function addOurPenaltyShot(game: Game, roster: Player[], input: PenaltySh
     detail: `Penalty shot — ${playerName(player)} — ${resultLabel}`,
     meta: { playerId: input.playerId, result: input.result, plusMinus: 'none', strength: 'EV' },
   });
-  return {
-    ...next,
-    scoreUs: next.scoreUs + (input.result === 'goal' ? 1 : 0),
-    sogUs: next.sogUs + (counts ? 1 : 0),
-    events: [...next.events, event],
-  };
+  return append(
+    {
+      ...next,
+      scoreUs: next.scoreUs + (input.result === 'goal' ? 1 : 0),
+      sogUs: next.sogUs + (counts ? 1 : 0),
+    },
+    event,
+    t,
+  );
 }
 
 export function addOppPenaltyShot(game: Game, roster: Player[], input: PenaltyShotInput, t: number): Game {
@@ -361,12 +381,15 @@ export function addOppPenaltyShot(game: Game, roster: Player[], input: PenaltySh
       emptyNet: !game.goalieId,
     },
   });
-  return {
-    ...next,
-    scoreOpp: next.scoreOpp + (input.result === 'goal' ? 1 : 0),
-    sogOpp: next.sogOpp + (counts ? 1 : 0),
-    events: [...next.events, event],
-  };
+  return append(
+    {
+      ...next,
+      scoreOpp: next.scoreOpp + (input.result === 'goal' ? 1 : 0),
+      sogOpp: next.sogOpp + (counts ? 1 : 0),
+    },
+    event,
+    t,
+  );
 }
 
 export function addGreatPlay(game: Game, note: string, t: number): Game {
@@ -376,7 +399,7 @@ export function addGreatPlay(game: Game, note: string, t: number): Game {
     detail: clean || 'Great play',
     meta: { note: clean },
   });
-  return { ...game, updatedAt: new Date(t).toISOString(), events: [...game.events, event] };
+  return append(game, event, t);
 }
 
 export function switchGoalie(game: Game, roster: Player[], goalieId: string | null, t: number): Game {
@@ -389,12 +412,7 @@ export function switchGoalie(game: Game, roster: Player[], goalieId: string | nu
     detail: nextGoalie ? `Goalie — ${playerName(nextGoalie)}` : 'Empty net',
     meta: { previousGoalieId: game.goalieId, nextGoalieId: goalieId },
   });
-  return {
-    ...next,
-    goalieId,
-    lastGoalieId: goalieId ?? next.lastGoalieId,
-    events: [...next.events, event],
-  };
+  return append({ ...next, goalieId, lastGoalieId: goalieId ?? next.lastGoalieId }, event, t);
 }
 
 export function setClock(game: Game, remainingMs: number, t: number): Game {
@@ -407,11 +425,14 @@ export function setClock(game: Game, remainingMs: number, t: number): Game {
     meta: { previousRemainingMs: paused.clock.remainingMs },
   });
   event.clockMs = nextRemaining;
-  return {
-    ...paused,
-    clock: { ...paused.clock, remainingMs: nextRemaining, running: false, anchorEpoch: null, anchorRemainingMs: null },
-    events: [...paused.events, event],
-  };
+  return append(
+    {
+      ...paused,
+      clock: { ...paused.clock, remainingMs: nextRemaining, running: false, anchorEpoch: null, anchorRemainingMs: null },
+    },
+    event,
+    t,
+  );
 }
 
 export function nextPeriod(game: Game, t: number): Game {
@@ -430,11 +451,14 @@ export function nextPeriod(game: Game, t: number): Game {
   );
   event.period = period;
   event.clockMs = length;
-  return {
-    ...paused,
-    clock: { period, running: false, remainingMs: length, anchorEpoch: null, anchorRemainingMs: null },
-    events: [...paused.events, event],
-  };
+  return append(
+    {
+      ...paused,
+      clock: { period, running: false, remainingMs: length, anchorEpoch: null, anchorRemainingMs: null },
+    },
+    event,
+    t,
+  );
 }
 
 export function setVideoSeconds(game: Game, videoSeconds: number | null, t: number): Game {
@@ -562,6 +586,114 @@ export function undo(game: Game, t: number): Game {
   }
 }
 
+function agePenalties(
+  penalties: ActivePenalty[],
+  fromPeriod: number,
+  fromClock: number,
+  toPeriod: number,
+  toClock: number,
+) {
+  if (fromPeriod !== toPeriod) return penalties;
+  const burned = fromClock - toClock;
+  if (burned <= 0) return penalties;
+  return penalties
+    .map((penalty) => ({ ...penalty, remainingMs: penalty.remainingMs - burned }))
+    .filter((penalty) => penalty.remainingMs > 0);
+}
+
+function penaltiesFromTag(event: GameEvent): ActivePenalty[] {
+  const ids = event.meta.penaltyIds ?? [];
+  if (!ids.length) return [];
+  const side = event.type === 'OPP_PENALTY' ? 'opp' : 'us';
+  const playerId = side === 'us' ? (event.meta.playerId ?? null) : null;
+  const infraction = event.meta.infraction ?? '';
+  const make = (id: string, kind: PenaltyKind, durationMs: number): ActivePenalty => ({
+    id,
+    side,
+    playerId,
+    infraction,
+    kind,
+    durationMs,
+    remainingMs: durationMs,
+    affectsStrength: kind !== 'misconduct',
+    endsOnGoal: kind === 'minor',
+  });
+  if (event.meta.kind === 'double-minor') {
+    const each = Math.round((event.meta.pimMs ?? 0) / Math.max(1, Math.min(2, ids.length)));
+    return ids.slice(0, 2).map((id) => make(id, 'minor', each));
+  }
+  const kind: PenaltyKind =
+    event.meta.kind === 'major' || event.meta.kind === 'misconduct' || event.meta.kind === 'minor' ? event.meta.kind : 'minor';
+  return [make(ids[0], kind, event.meta.pimMs ?? 0)];
+}
+
+/** Rebuild the board for a tag saved before penalty snapshots existed. */
+function replayBoard(game: Game, events: GameEvent[]): BoardMark {
+  let scoreUs = 0;
+  let scoreOpp = 0;
+  let sogUs = 0;
+  let sogOpp = 0;
+  let goalieId = game.starterGoalieId;
+  let penalties: ActivePenalty[] = [];
+  let period = 1;
+  let clockMs = game.periodLengthsMs[0];
+  for (const event of events) {
+    penalties = agePenalties(penalties, period, clockMs, event.period, event.clockMs);
+    period = event.period;
+    clockMs = event.clockMs;
+    if (event.type === 'SHOT') sogUs += 1;
+    else if (event.type === 'OPP_SHOT') sogOpp += 1;
+    else if (event.type === 'GOAL') {
+      scoreUs += 1;
+      sogUs += 1;
+      if (event.meta.endedPenalty) penalties = penalties.filter((penalty) => penalty.id !== event.meta.endedPenalty?.id);
+    } else if (event.type === 'OPP_GOAL') {
+      scoreOpp += 1;
+      sogOpp += 1;
+      if (event.meta.endedPenalty) penalties = penalties.filter((penalty) => penalty.id !== event.meta.endedPenalty?.id);
+    } else if (event.type === 'PENALTY' || event.type === 'OPP_PENALTY') penalties = [...penalties, ...penaltiesFromTag(event)];
+    else if (event.type === 'PENALTY_SHOT') {
+      if (event.meta.result === 'goal') scoreUs += 1;
+      if (event.meta.result !== 'miss') sogUs += 1;
+    } else if (event.type === 'OPP_PENALTY_SHOT') {
+      if (event.meta.result === 'goal') scoreOpp += 1;
+      if (event.meta.result !== 'miss') sogOpp += 1;
+    } else if (event.type === 'GOALIE') goalieId = event.meta.nextGoalieId ?? null;
+    else if (event.type === 'PENALTY_CLEAR' && event.meta.endedPenalty) {
+      penalties = penalties.filter((penalty) => penalty.id !== event.meta.endedPenalty?.id);
+    }
+  }
+  return { scoreUs, scoreOpp, sogUs, sogOpp, goalieId, penalties };
+}
+
+export function returnToEvent(game: Game, eventId: string, t: number): Game {
+  const index = game.events.findIndex((event) => event.id === eventId);
+  if (index < 0) return game;
+  const event = game.events[index];
+  const events = game.events.slice(0, index + 1);
+  const board = event.meta.board ?? replayBoard(game, events);
+  return {
+    ...game,
+    updatedAt: new Date(t).toISOString(),
+    events,
+    videoSeconds: event.videoSeconds,
+    scoreUs: board.scoreUs,
+    scoreOpp: board.scoreOpp,
+    sogUs: board.sogUs,
+    sogOpp: board.sogOpp,
+    goalieId: board.goalieId,
+    ...(board.goalieMs ? { goalieMs: { ...board.goalieMs } } : {}),
+    penalties: board.penalties.map((penalty) => ({ ...penalty })),
+    clock: {
+      period: event.period,
+      running: false,
+      remainingMs: Math.max(0, event.clockMs),
+      anchorEpoch: null,
+      anchorRemainingMs: null,
+    },
+  };
+}
+
 function penaltyWho(roster: Player[], game: Game, penalty: ActivePenalty) {
   if (penalty.side === 'opp') return 'Opponent';
   if (!penalty.playerId) return 'Bench';
@@ -623,15 +755,75 @@ export function clearPenalty(game: Game, roster: Player[], penaltyId: string, t:
     detail: `Penalty cleared — ${penaltyWho(roster, next, current)} ${current.infraction}`,
     meta: { penaltyIds: [current.id], endedPenalty: current, infraction: current.infraction, playerId: current.playerId },
   });
-  return {
-    ...next,
-    penalties: next.penalties.filter((penalty) => penalty.id !== penaltyId),
-    events: [...next.events, event],
-  };
+  return append({ ...next, penalties: next.penalties.filter((penalty) => penalty.id !== penaltyId) }, event, t);
 }
 
-export function setPenaltyLengths(game: Game, lengths: PenaltyLengths, t: number): Game {
+function periodLengthAt(period: number, periods: [number, number, number], ot: number) {
+  if (period >= 4) return ot;
+  return periods[Math.min(2, Math.max(0, period - 1))];
+}
+
+function shiftPeriodLengths(game: Game, periodLengthsMs: [number, number, number], otLengthMs: number): Game {
+  const previousLength = (period: number) => (period >= 4 ? game.otLengthMs : game.periodLengthsMs[period - 1]);
+  const nextLength = (period: number) => periodLengthAt(period, periodLengthsMs, otLengthMs);
+  const events = game.events.map((event) => {
+    const delta = nextLength(event.period) - previousLength(event.period);
+    if (!delta) return event;
+    const clockMs = Math.min(nextLength(event.period), Math.max(0, event.clockMs + delta));
+    if (clockMs === event.clockMs) return event;
+    let detail = event.detail;
+    if (event.type === 'CLOCK') detail = `Clock set to ${formatClock(clockMs)}`;
+    if (event.type === 'PERIOD') {
+      const label = event.period === 4 ? 'Overtime' : `${['', '1st', '2nd', '3rd'][event.period]} period`;
+      detail = `${label} — ${formatClock(clockMs)}`;
+    }
+    return { ...event, clockMs, detail };
+  });
+  const delta = nextLength(game.clock.period) - previousLength(game.clock.period);
+  let clock = game.clock;
+  if (delta) {
+    const remainingMs = Math.min(nextLength(game.clock.period), Math.max(0, game.clock.remainingMs + delta));
+    const running = Boolean(game.clock.running && remainingMs > 0);
+    clock = {
+      ...game.clock,
+      remainingMs,
+      running,
+      anchorEpoch: running ? game.clock.anchorEpoch : null,
+      anchorRemainingMs: running ? remainingMs : null,
+    };
+  }
+  return { ...game, periodLengthsMs, otLengthMs, clock, events };
+}
+
+export function setLengths(
+  game: Game,
+  lengths: { periodLengthsMs: [number, number, number]; otLengthMs: number; penaltyLengthsMs: PenaltyLengths },
+  t: number,
+): Game {
+  const periodLengthsMs: [number, number, number] = [
+    Math.max(0, Math.round(lengths.periodLengthsMs[0])),
+    Math.max(0, Math.round(lengths.periodLengthsMs[1])),
+    Math.max(0, Math.round(lengths.periodLengthsMs[2])),
+  ];
+  const otLengthMs = Math.max(0, Math.round(lengths.otLengthMs));
+  const penaltyLengthsMs: PenaltyLengths = {
+    minor: Math.max(0, Math.round(lengths.penaltyLengthsMs.minor)),
+    major: Math.max(0, Math.round(lengths.penaltyLengthsMs.major)),
+    misconduct: Math.max(0, Math.round(lengths.penaltyLengthsMs.misconduct)),
+  };
+  const samePeriods =
+    periodLengthsMs.every((value, index) => value === game.periodLengthsMs[index]) && otLengthMs === game.otLengthMs;
+  const samePenalties =
+    penaltyLengthsMs.minor === game.penaltyLengthsMs.minor &&
+    penaltyLengthsMs.major === game.penaltyLengthsMs.major &&
+    penaltyLengthsMs.misconduct === game.penaltyLengthsMs.misconduct;
+  if (samePeriods && samePenalties) return game;
   const frozen = freeze(game, t, true);
+  const shifted = samePeriods ? frozen : shiftPeriodLengths(frozen, periodLengthsMs, otLengthMs);
+  return samePenalties ? shifted : applyPenaltyLengths(shifted, penaltyLengthsMs, t);
+}
+
+function applyPenaltyLengths(frozen: Game, lengths: PenaltyLengths, t: number): Game {
   const nextLengths: PenaltyLengths = {
     minor: Math.max(0, Math.round(lengths.minor)),
     major: Math.max(0, Math.round(lengths.major)),
@@ -674,6 +866,10 @@ export function setPenaltyLengths(game: Game, lengths: PenaltyLengths, t: number
     };
   });
   return { ...frozen, penaltyLengthsMs: nextLengths, penalties, events, updatedAt: new Date(t).toISOString() };
+}
+
+export function setPenaltyLengths(game: Game, lengths: PenaltyLengths, t: number): Game {
+  return applyPenaltyLengths(freeze(game, t, true), lengths, t);
 }
 
 function eventStamp(edit: EventEdit) {

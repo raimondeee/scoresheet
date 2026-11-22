@@ -21,6 +21,8 @@ import {
   removeEvent,
   setClock,
   setDressed,
+  returnToEvent,
+  setLengths,
   setPenaltyLengths,
   updatePenalty,
   setEventVideo,
@@ -78,6 +80,10 @@ type Store = {
   editPenalty: (id: string, penaltyId: string, edit: PenaltyEdit) => void;
   clearPenalty: (id: string, penaltyId: string) => void;
   setPenaltyLengths: (id: string, lengths: PenaltyLengths) => void;
+  setLengths: (
+    id: string,
+    lengths: { periodLengthsMs: [number, number, number]; otLengthMs: number; penaltyLengthsMs: PenaltyLengths },
+  ) => void;
   changeGoalie: (id: string, goalieId: string | null) => void;
   setRemaining: (id: string, remainingMs: number) => void;
   advancePeriod: (id: string) => void;
@@ -90,6 +96,7 @@ type Store = {
   editDressed: (id: string, dressedIds: string[]) => void;
   finish: (id: string) => void;
   undoLast: (id: string) => void;
+  returnTo: (id: string, eventId: string) => void;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -233,6 +240,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       update(id, (game, roster, t) => updatePenalty(game, roster, penaltyId, edit, t)),
     clearPenalty: (id, penaltyId) => update(id, (game, roster, t) => clearPenalty(game, roster, penaltyId, t)),
     setPenaltyLengths: (id, lengths) => update(id, (game, _roster, t) => setPenaltyLengths(game, lengths, t)),
+    setLengths: (id, lengths) => update(id, (game, _roster, t) => setLengths(game, lengths, t)),
     changeGoalie: (id, goalieId) => update(id, (game, roster, t) => switchGoalie(game, roster, goalieId, t)),
     setRemaining: (id, remainingMs) => update(id, (game, _roster, t) => setClock(game, remainingMs, t)),
     advancePeriod: (id) => update(id, (game, _roster, t) => nextPeriod(game, t)),
@@ -246,6 +254,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     editDressed: (id, dressedIds) => update(id, (game, roster, t) => setDressed(game, roster, dressedIds, t)),
     finish: (id) => update(id, (game, _roster, t) => finalizeGame(game, t)),
     undoLast: (id) => update(id, (game, _roster, t) => undo(game, t)),
+    returnTo: (id, eventId) => update(id, (game, _roster, t) => returnToEvent(game, eventId, t)),
   };
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;

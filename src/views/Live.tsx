@@ -22,7 +22,7 @@ import {
   youtubeId,
 } from '../hockey.ts';
 import { useApp } from '../store.tsx';
-import type { ActivePenalty, Game, PenaltyKind, PenaltyLengths, Player, PlusMinus, ShotResult, Strength } from '../types.ts';
+import type { ActivePenalty, Game, GameEvent, PenaltyKind, PenaltyLengths, Player, PlusMinus, ShotResult, Strength } from '../types.ts';
 
 type GoalDraft = {
   step: 'scorer' | 'a1' | 'a2' | 'ice' | 'skip';
@@ -149,6 +149,7 @@ export function Live() {
   const [link, setLink] = useState('');
   const [tap, setTap] = useState<string | null>(null);
   const [filmPauseAt, setFilmPauseAt] = useState<number | null>(null);
+  const [returnId, setReturnId] = useState<string | null>(null);
   const videoRef = useRef(videoText);
   videoRef.current = videoText;
   const playerRef = useRef<FilmPlayerHandle>(null);
@@ -163,6 +164,7 @@ export function Live() {
     setWizard(null);
     setFilmPauseAt(null);
     setTap(null);
+    setReturnId(null);
   }, [game?.id]);
 
   useEffect(() => () => {
@@ -272,6 +274,14 @@ export function Live() {
     setWizard(null);
   }
 
+  function restoreTo(event: GameEvent) {
+    app.returnTo(game!.id, event.id);
+    if (event.videoSeconds != null) playerRef.current?.seek(event.videoSeconds);
+    setVideoText(event.videoSeconds == null ? '' : formatVideo(event.videoSeconds));
+    setFilmPauseAt(null);
+    setReturnId(null);
+  }
+
   function penaltyLabel(penalty: ActivePenalty) {
     if (penalty.side === 'opp') return penalty.infraction;
     if (!penalty.playerId) return `Bench · ${penalty.infraction}`;
@@ -301,6 +311,7 @@ export function Live() {
   }
 
   const last = game.events[game.events.length - 1];
+  const returnEvent = returnId ? (game.events.find((event) => event.id === returnId) ?? null) : null;
 
   return (
     <div className={`page live-page${showFilm ? ' with-film' : ''}`}>
@@ -575,6 +586,9 @@ export function Live() {
                     <span>{formatGameStamp(event.period, event.clockMs)}</span>
                     <strong>{event.detail}</strong>
                   </button>
+                  <button type="button" className="log-return" onClick={() => setReturnId(event.id)}>
+                    Return
+                  </button>
                 </li>
               ))}
             </ol>
@@ -704,12 +718,31 @@ export function Live() {
         <EventEditor game={game} roster={roster} eventId={wizard.eventId} onClose={close} />
       ) : null}
 
+      {returnEvent ? (
+        <Modal
+          title="Return to this tag?"
+          subtitle={`${formatGameStamp(returnEvent.period, returnEvent.clockMs)} · ${returnEvent.detail}`}
+          onClose={() => setReturnId(null)}
+        >
+          <p className="muted">
+            The clock, the film, and the penalties go back to this tag.
+            {last?.id === returnEvent.id ? '' : ' Tags after it are removed.'}
+          </p>
+          <button type="button" className="btn btn-green" onClick={() => restoreTo(returnEvent)}>
+            Return
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={() => setReturnId(null)}>
+            Keep going
+          </button>
+        </Modal>
+      ) : null}
+
       {wizard?.type === 'lengths' ? (
         <LengthsWindow
-          lengths={game.penaltyLengthsMs}
+          game={game}
           onClose={close}
           onSave={(lengths) => {
-            app.setPenaltyLengths(game.id, lengths);
+            app.setLengths(game.id, lengths);
             close();
           }}
         />
@@ -1217,61 +1250,94 @@ function PenaltyEditWindow({
 }
 
 function LengthsWindow({
-  lengths,
+  game,
   onClose,
   onSave,
 }: {
-  lengths: PenaltyLengths;
+  game: Game;
   onClose: () => void;
-  onSave: (lengths: PenaltyLengths) => void;
+  onSave: (lengths: { periodLengthsMs: [number, number, number]; otLengthMs: number; penaltyLengthsMs: PenaltyLengths }) => void;
 }) {
   const split = (ms: number) => {
     const total = Math.max(0, Math.round(ms / 1000));
     return { minutes: Math.floor(total / 60), seconds: total % 60 };
   };
-  const [minor, setMinor] = useState(split(lengths.minor));
-  const [major, setMajor] = useState(split(lengths.major));
-  const [misconduct, setMisconduct] = useState(split(lengths.misconduct));
+  const [periods, setPeriods] = useState(game.periodLengthsMs.map(split) as Array<{ minutes: number; seconds: number }>);
+  const [ot, setOt] = useState(split(game.otLengthMs));
+  const [minor, setMinor] = useState(split(game.penaltyLengthsMs.minor));
+  const [major, setMajor] = useState(split(game.penaltyLengthsMs.major));
+  const [misconduct, setMisconduct] = useState(split(game.penaltyLengthsMs.misconduct));
   const pack = (part: { minutes: number; seconds: number }) =>
     (Math.max(0, part.minutes) * 60 + Math.min(59, Math.max(0, part.seconds))) * 1000;
+  const row = (
+    label: string,
+    value: { minutes: number; seconds: number },
+    setValue: (next: { minutes: number; seconds: number }) => void,
+    current = false,
+  ) => (
+    <div className="length-line" key={label}>
+      <span>
+        {label}
+        {current ? <small className="muted"> · now</small> : null}
+      </span>
+      <div className="length-time">
+        <input
+          type="number"
+          min={0}
+          aria-label={`${label} minutes`}
+          value={value.minutes}
+          onChange={(event) => setValue({ ...value, minutes: Number(event.target.value) })}
+        />
+        <span aria-hidden="true">:</span>
+        <input
+          type="number"
+          min={0}
+          max={59}
+          aria-label={`${label} seconds`}
+          value={value.seconds}
+          onChange={(event) => setValue({ ...value, seconds: Number(event.target.value) })}
+        />
+      </div>
+    </div>
+  );
   return (
-    <Modal title="Penalty lengths" subtitle="The clock keeps running." onClose={onClose}>
+    <Modal title="Lengths" subtitle="The clock keeps running." onClose={onClose}>
+      <p className="kicker">Periods</p>
+      <p className="muted">
+        The game clock and the stamps in that period move by the same amount. YouTube times stay put.
+      </p>
+      <div className="length-column">
+        {(['1st Period', '2nd Period', '3rd Period'] as const).map((label, index) =>
+          row(
+            label,
+            periods[index],
+            (next) => {
+              setPeriods((current) => current.map((item, i) => (i === index ? next : item)));
+            },
+            game.clock.period === index + 1,
+          ),
+        )}
+        {row('Overtime', ot, setOt, game.clock.period === 4)}
+      </div>
+      <p className="kicker">Penalties</p>
       <p className="muted">
         These are the lengths for the next penalty. A penalty already on the clock that still uses the old length moves with the new time.
       </p>
-      {(
-        [
-          ['Minor', minor, setMinor],
-          ['Major', major, setMajor],
-          ['Misconduct', misconduct, setMisconduct],
-        ] as const
-      ).map(([label, value, setValue]) => (
-        <div className="pair" key={label}>
-          <label className="field">
-            {label} minutes
-            <input
-              type="number"
-              min={0}
-              value={value.minutes}
-              onChange={(event) => setValue({ ...value, minutes: Number(event.target.value) })}
-            />
-          </label>
-          <label className="field">
-            Seconds
-            <input
-              type="number"
-              min={0}
-              max={59}
-              value={value.seconds}
-              onChange={(event) => setValue({ ...value, seconds: Number(event.target.value) })}
-            />
-          </label>
-        </div>
-      ))}
+      <div className="length-column">
+        {row('Minor', minor, setMinor)}
+        {row('Major', major, setMajor)}
+        {row('Misconduct', misconduct, setMisconduct)}
+      </div>
       <button
         type="button"
         className="btn btn-green"
-        onClick={() => onSave({ minor: pack(minor), major: pack(major), misconduct: pack(misconduct) })}
+        onClick={() =>
+          onSave({
+            periodLengthsMs: [pack(periods[0]), pack(periods[1]), pack(periods[2])],
+            otLengthMs: pack(ot),
+            penaltyLengthsMs: { minor: pack(minor), major: pack(major), misconduct: pack(misconduct) },
+          })
+        }
       >
         Save lengths
       </button>

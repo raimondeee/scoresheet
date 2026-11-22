@@ -71,6 +71,18 @@ export type EventMeta = {
   nextGoalieId?: string | null;
   previousPeriod?: number;
   previousRemainingMs?: number;
+  /** Score, shots, goalie, penalties, and goalie time immediately after this tag. */
+  board?: BoardMark;
+};
+
+export type BoardMark = {
+  scoreUs: number;
+  scoreOpp: number;
+  sogUs: number;
+  sogOpp: number;
+  goalieId: string | null;
+  penalties: ActivePenalty[];
+  goalieMs?: Record<string, number>;
 };
 
 export type GameEvent = {

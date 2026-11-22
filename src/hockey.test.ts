@@ -19,7 +19,11 @@ import {
   finalizeGame,
   freeze,
   pauseClock,
+  nextPeriod,
   removeEvent,
+  returnToEvent,
+  setClock,
+  setLengths,
   setPenaltyLengths,
   startClock,
   undo,
@@ -185,6 +189,128 @@ test('editing a penalty or its default length keeps the clock running', () => {
   assert.equal(game.penalties.length, 0);
   game = undo(game, 7_000);
   assert.equal(game.penalties.length, 1);
+});
+
+test('return to a tag restores the clock, film time, and penalty', () => {
+  let game = setClock(fresh(), 470_000, 1_000);
+  game = { ...game, videoSeconds: 100 };
+  game = addOurPenalty(game, roster, { playerId: 'a', infraction: 'Tripping', kind: 'minor' }, 1_500);
+  const penalty = game.events.find((event) => event.type === 'PENALTY')!;
+  assert.equal(penalty.clockMs, 470_000);
+  assert.equal(penalty.videoSeconds, 100);
+  assert.equal(penalty.meta.board?.penalties[0]?.remainingMs, 120_000);
+
+  game = startClock(game, 2_000);
+  game = freeze(game, 32_000, true);
+  game = { ...game, videoSeconds: 160 };
+  game = addOppShot(game, roster, 62_000);
+  game = { ...game, videoSeconds: 220 };
+  game = addOppShot(game, roster, 92_000);
+  const firstShot = game.events.find((event) => event.type === 'OPP_SHOT')!;
+  assert.equal(firstShot.clockMs, 410_000);
+  assert.equal(firstShot.meta.board?.penalties[0]?.remainingMs, 60_000);
+
+  const restored = returnToEvent(game, penalty.id, 120_000);
+  assert.equal(restored.clock.running, false);
+  assert.equal(restored.clock.remainingMs, 470_000);
+  assert.equal(restored.penalties.length, 1);
+  assert.equal(restored.penalties[0].remainingMs, 120_000);
+  assert.equal(restored.videoSeconds, 100);
+  assert.equal(restored.sogOpp, 0);
+  assert.equal(restored.goalieMs.g ?? 0, 0);
+  assert.equal(restored.events.some((event) => event.type === 'OPP_SHOT'), false);
+
+  const atShot = returnToEvent(game, firstShot.id, 120_000);
+  assert.equal(atShot.clock.remainingMs, 410_000);
+  assert.equal(atShot.penalties[0].remainingMs, 60_000);
+  assert.equal(atShot.videoSeconds, 160);
+  assert.equal(atShot.sogOpp, 1);
+  assert.equal(atShot.goalieMs.g, 60_000);
+  assert.equal(atShot.events.length, game.events.length - 1);
+
+  const legacy = {
+    ...game,
+    events: game.events.map((event) =>
+      event.id === penalty.id ? { ...event, meta: { ...event.meta, board: undefined } } : event,
+    ),
+  };
+  const replayed = returnToEvent(legacy, penalty.id, 120_000);
+  assert.equal(replayed.clock.remainingMs, 470_000);
+  assert.equal(replayed.penalties[0].remainingMs, 120_000);
+  assert.equal(replayed.videoSeconds, 100);
+});
+
+test('shortening the period in progress pulls the live clock back', () => {
+  let game = startClock(fresh(), 1_000);
+  game = { ...game, videoSeconds: 50 };
+  game = setLengths(
+    game,
+    {
+      periodLengthsMs: [780_000, 900_000, 900_000],
+      otLengthMs: game.otLengthMs,
+      penaltyLengthsMs: game.penaltyLengthsMs,
+    },
+    301_000,
+  );
+  assert.equal(game.clock.running, true);
+  assert.equal(readRemaining(game.clock, 301_000), 480_000);
+  assert.equal(game.videoSeconds, 50);
+});
+
+test('a shorter period pulls the game clock and stamps back and leaves YouTube time alone', () => {
+  let game = setClock(fresh(), 600_000, 1_000);
+  game = {
+    ...game,
+    videoSeconds: 1_000,
+    events: game.events.map((event) => ({ ...event, videoSeconds: 125 })),
+  };
+  game = addOurShot(game, roster, 'a', 1_000);
+  const shot = game.events.find((event) => event.type === 'SHOT')!;
+  game = {
+    ...game,
+    events: game.events.map((event) => (event.id === shot.id ? { ...event, videoSeconds: 200, clockMs: 600_000 } : event)),
+  };
+  game = nextPeriod(game, 2_000);
+  const beforeOt = game.otLengthMs;
+  game = setLengths(
+    game,
+    {
+      periodLengthsMs: [780_000, 900_000, 900_000],
+      otLengthMs: beforeOt,
+      penaltyLengthsMs: game.penaltyLengthsMs,
+    },
+    3_000,
+  );
+  assert.equal(game.periodLengthsMs[0], 780_000);
+  assert.equal(game.clock.period, 2);
+  assert.equal(game.clock.remainingMs, 900_000);
+  const clockEvent = game.events.find((event) => event.type === 'CLOCK')!;
+  assert.equal(clockEvent.clockMs, 480_000);
+  assert.equal(clockEvent.videoSeconds, 125);
+  assert.match(clockEvent.detail, /8:00/);
+  const shiftedShot = game.events.find((event) => event.type === 'SHOT')!;
+  assert.equal(shiftedShot.clockMs, 480_000);
+  assert.equal(shiftedShot.videoSeconds, 200);
+  assert.equal(game.videoSeconds, 1_000);
+  assert.equal(gameElapsedMs(game, 1, shiftedShot.clockMs), 300_000);
+  const periodEvent = game.events.find((event) => event.type === 'PERIOD')!;
+  assert.equal(periodEvent.period, 2);
+  assert.equal(periodEvent.clockMs, 900_000);
+  assert.equal(periodEvent.videoSeconds, 1_000);
+
+  game = startClock(game, 4_000);
+  game = setLengths(
+    game,
+    {
+      periodLengthsMs: game.periodLengthsMs,
+      otLengthMs: 180_000,
+      penaltyLengthsMs: game.penaltyLengthsMs,
+    },
+    4_000,
+  );
+  assert.equal(game.clock.running, true);
+  assert.equal(game.otLengthMs, 180_000);
+  assert.equal(readRemaining(game.clock, 4_000), 900_000);
 });
 
 test('a running penalty shares the game clock and is not counted twice', () => {

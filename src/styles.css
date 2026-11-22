@@ -483,7 +483,23 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .tone-paused .log-scroll::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.18); }
 .tone-paused .log-scroll::-webkit-scrollbar-thumb { background: #08301a; border-color: rgba(0, 0, 0, 0.18); }
 .log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.log li { border-bottom: 1px solid var(--line); }
+.log li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.log-return {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 4px;
+}
+.tone-paused .log-return { color: #f4fff8; }
 .log-item {
   width: 100%;
   display: grid;
