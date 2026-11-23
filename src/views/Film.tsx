@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EventFilter, matchesEventFilter, type EventFilterValue } from '../components/EventFilter.tsx';
+import { TimeNumber } from '../components/TimeNumber.tsx';
 import {
   FILM_TYPES,
   eventTone,
@@ -9,8 +10,54 @@ import {
   formatVideoClock,
   gameElapsedMs,
   parseVideoClock,
+  youtubeTimestamps,
+  type TimestampChoice,
 } from '../hockey.ts';
 import { useApp } from '../store.tsx';
+
+function FilmStamp({
+  eventId,
+  videoSeconds,
+  onAlign,
+}: {
+  eventId: string;
+  videoSeconds: number | null;
+  onAlign: (seconds: number) => void;
+}) {
+  const [text, setText] = useState(videoSeconds == null ? '' : formatVideoClock(videoSeconds));
+  const [error, setError] = useState('');
+  useEffect(() => {
+    setText(videoSeconds == null ? '' : formatVideoClock(videoSeconds));
+    setError('');
+  }, [eventId, videoSeconds]);
+  return (
+    <div className="film-align">
+      <input
+        value={text}
+        placeholder="00:00:00"
+        inputMode="numeric"
+        aria-label="YouTube time for this tag"
+        onChange={(event) => setText(event.target.value)}
+      />
+      <button
+        type="button"
+        className="btn btn-green"
+        onClick={() => {
+          const parsed = parseVideoClock(text);
+          if (parsed == null) {
+            setError('Use HH:MM:SS.');
+            return;
+          }
+          setError('');
+          onAlign(parsed);
+        }}
+      >
+        Align below
+      </button>
+      {error ? <span className="bad">{error}</span> : null}
+    </div>
+  );
+}
 
 function byGameClock<T extends { period: number; clockMs: number }>(
   game: { periodLengthsMs: [number, number, number]; otLengthMs: number },
@@ -29,6 +76,9 @@ export function Film() {
   const [timeText, setTimeText] = useState('00:00:00');
   const [error, setError] = useState('');
   const [kind, setKind] = useState<EventFilterValue>('all');
+  const [stamps, setStamps] = useState<TimestampChoice>({ goals: true, penalties: false, shots: false });
+  const [copied, setCopied] = useState(false);
+  const stampRef = useRef<HTMLTextAreaElement>(null);
   const games = [...app.state.games].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const selected = filter === 'all' ? null : games.find((game) => game.id === filter) ?? null;
   const filmEvents = selected ? byGameClock(selected, selected.events.filter((event) => FILM_TYPES.has(event.type))) : [];
@@ -52,6 +102,24 @@ export function Film() {
   function saveLink() {
     if (!selected) return;
     app.editYoutube(selected.id, url);
+  }
+
+  const chapters = selected ? youtubeTimestamps(selected, app.state.roster, selected.events, stamps) : null;
+
+  useEffect(() => {
+    setCopied(false);
+  }, [selected?.id, stamps.goals, stamps.penalties, stamps.shots]);
+
+  async function copyChapters() {
+    if (!chapters?.text) return;
+    try {
+      await navigator.clipboard.writeText(chapters.text);
+    } catch {
+      stampRef.current?.focus();
+      stampRef.current?.select();
+      document.execCommand('copy');
+    }
+    setCopied(true);
   }
 
   function align(laterOnly: boolean) {
@@ -122,23 +190,19 @@ export function Film() {
                   />
                 </label>
                 <p className="muted">
-                  Find that play in the video and enter the time YouTube shows. Align timestamps moves every event by the game clock. Realign later events keeps earlier tags and moves only this play and the ones after it. Links still open {app.state.filmLeadSeconds}s early.
+                  Enter the YouTube time for this tag, then align below it. Tags above stay put. Tags underneath move by the game clock, and stop at the next tag you have already aligned. Links still open {app.state.filmLeadSeconds}s early.
                 </p>
                 <div className="row wrap">
-                  <button type="button" className="btn btn-green" onClick={() => align(false)}>
-                    Align timestamps
-                  </button>
-                  <button type="button" className="btn btn-ghost" onClick={() => align(true)}>
-                    Realign later events
+                  <button type="button" className="btn btn-green" onClick={() => align(true)}>
+                    Align below
                   </button>
                   <label className="field grow">
                     Lead time (seconds)
-                    <input
-                      type="number"
-                      min={0}
-                      max={120}
+                    <TimeNumber
+                      label="Lead time (seconds)"
                       value={app.state.filmLeadSeconds}
-                      onChange={(event) => app.setLead(Number(event.target.value))}
+                      max={120}
+                      onValue={(seconds) => app.setLead(seconds)}
                     />
                   </label>
                 </div>
@@ -152,6 +216,69 @@ export function Film() {
           <p className="muted">Pick the game whose video you want to line up.</p>
         )}
       </section>
+
+      {selected && chapters ? (
+        <section className="card stack">
+          <h2>YouTube timestamps</h2>
+          <p className="muted">
+            Paste this into the video description. Goals are included. Add penalties or shots on goal when you want them in the list.
+          </p>
+          <div className="row wrap">
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={stamps.goals}
+                onChange={(event) => setStamps((current) => ({ ...current, goals: event.target.checked }))}
+              />
+              Goals
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={stamps.penalties}
+                onChange={(event) => setStamps((current) => ({ ...current, penalties: event.target.checked }))}
+              />
+              Penalties
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={stamps.shots}
+                onChange={(event) => setStamps((current) => ({ ...current, shots: event.target.checked }))}
+              />
+              Shots on goal
+            </label>
+          </div>
+          {chapters.text ? (
+            <>
+              <textarea
+                ref={stampRef}
+                className="timestamp-out"
+                readOnly
+                rows={Math.min(18, Math.max(6, chapters.text.split('\n').length + 1))}
+                value={chapters.text}
+                aria-label="YouTube description timestamps"
+              />
+              <button type="button" className="btn btn-green" onClick={copyChapters}>
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+              {chapters.missing ? (
+                <p className="muted">
+                  {chapters.missing === 1
+                    ? '1 tag has no YouTube time yet, so the list skips it.'
+                    : `${chapters.missing} tags have no YouTube time yet, so the list skips them.`}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <p className="empty">
+              {chapters.missing
+                ? 'These tags have no YouTube time yet. Align one event above and the rest follow the game clock.'
+                : 'Nothing in this game matches these filters.'}
+            </p>
+          )}
+        </section>
+      ) : null}
 
       {selected && rows.length === 0 ? null : rows.length === 0 ? (
         <p className="empty card">Goals, penalties, penalty shots, and great plays show up here.</p>
@@ -171,6 +298,11 @@ export function Film() {
                   {game.opponent} · {formatGameStamp(event.period, event.clockMs)}
                   {event.videoSeconds == null ? '' : ` · ${formatVideoClock(event.videoSeconds)}`}
                 </p>
+                <FilmStamp
+                  eventId={event.id}
+                  videoSeconds={event.videoSeconds}
+                  onAlign={(seconds) => app.alignFilm(game.id, event.id, seconds, true)}
+                />
               </div>
               <div>
                 {href ? (

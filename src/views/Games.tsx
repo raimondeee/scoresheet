@@ -2,12 +2,45 @@ import { useState } from 'react';
 import { BoxScore } from '../components/BoxScore.tsx';
 import { EventEditModal } from '../components/EventEdit.tsx';
 import { EventFilter, matchesEventFilter, type EventFilterValue } from '../components/EventFilter.tsx';
+import { Modal } from '../components/Modal.tsx';
 import { FILM_TYPES, eventTone, formatDate, formatGameStamp, readRemaining } from '../hockey.ts';
 import { useApp } from '../store.tsx';
+import type { Game } from '../types.ts';
+
+function GameNameEditor({ game, onClose }: { game: Game; onClose: () => void }) {
+  const app = useApp();
+  const [name, setName] = useState(game.opponent);
+  const [date, setDate] = useState(game.date);
+  return (
+    <Modal title="Game name" subtitle={formatDate(game.date)} onClose={onClose}>
+      <label className="field">
+        Name
+        <input value={name} onChange={(event) => setName(event.target.value)} />
+      </label>
+      <label className="field">
+        Date
+        <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+      </label>
+      <button
+        type="button"
+        className="btn btn-green"
+        disabled={!name.trim()}
+        onClick={() => {
+          app.renameGame(game.id, name, date);
+          onClose();
+        }}
+      >
+        Save
+      </button>
+    </Modal>
+  );
+}
 
 export function Games() {
   const app = useApp();
+  const [editId, setEditId] = useState<string | null>(null);
   const games = [...app.state.games].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const editing = games.find((game) => game.id === editId) ?? null;
   return (
     <div className="page">
       <div className="page-head">
@@ -31,6 +64,9 @@ export function Games() {
               </div>
               <div className="score-lock">{game.scoreUs}–{game.scoreOpp}</div>
               <div className="row">
+                <button type="button" className="btn btn-ghost" onClick={() => setEditId(game.id)}>
+                  Edit
+                </button>
                 <button type="button" className="btn btn-ghost" onClick={() => app.open('game', game.id)}>
                   View
                 </button>
@@ -47,6 +83,7 @@ export function Games() {
           );
         })}
       </div>
+      {editing ? <GameNameEditor game={editing} onClose={() => setEditId(null)} /> : null}
     </div>
   );
 }
@@ -58,6 +95,7 @@ export function GameDetail() {
   const [confirm, setConfirm] = useState(false);
   const [eventId, setEventId] = useState<string | null>(null);
   const [eventFilter, setEventFilter] = useState<EventFilterValue>('all');
+  const [editingName, setEditingName] = useState(false);
   if (!game) {
     return (
       <div className="page">
@@ -82,6 +120,9 @@ export function GameDetail() {
         ) : null}
         <button type="button" className="btn btn-ghost" onClick={() => app.open('film', game.id)}>
           Coaches film
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={() => setEditingName(true)}>
+          Edit name
         </button>
         {game.status === 'live' ? (
           <button type="button" className="btn btn-danger" onClick={() => setConfirm(true)}>
@@ -134,6 +175,7 @@ export function GameDetail() {
           }}
         />
       ) : null}
+      {editingName ? <GameNameEditor game={game} onClose={() => setEditingName(false)} /> : null}
       {confirm ? (
         <div className="modal-back" onMouseDown={() => setConfirm(false)}>
           <div className="modal" role="dialog" aria-label="Finalize game" onMouseDown={(event) => event.stopPropagation()}>

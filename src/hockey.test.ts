@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { shouldArchiveScorebook } from './backup.ts';
-import { eventTone, filmHref, formatClock, gameElapsedMs, manpower, plusMinusFor, readPenaltyRemaining, readRemaining, situation, videoSecondsFromAnchor } from './hockey.ts';
+import { cleanDigits, eventTone, filmHref, formatClock, gameElapsedMs, manpower, plusMinusFor, readPenaltyRemaining, readRemaining, situation, videoSecondsFromAnchor, youtubeTimestamps } from './hockey.ts';
 import { buildBox } from './stats.ts';
 import {
   addOppGoal,
@@ -21,6 +21,7 @@ import {
   pauseClock,
   nextPeriod,
   removeEvent,
+  renameGame,
   returnToEvent,
   setClock,
   setLengths,
@@ -392,6 +393,89 @@ test('one YouTube stamp lines the other events up by the game clock', () => {
   assert.equal(game.events[0].videoSeconds, 3_723);
   assert.equal(game.events.find((event) => event.id === goal.id)?.videoSeconds, 5_000);
   assert.equal(game.events.find((event) => event.id === 'later')?.videoSeconds, 5_060);
+});
+
+test('aligning below a tag leaves earlier stamps and stops at the next aligned tag', () => {
+  let game = addOurShot(fresh(), roster, 'a', 0);
+  const early = game.events[0];
+  game = {
+    ...game,
+    events: [
+      { ...early, clockMs: 840_000 },
+      { ...early, id: 'mid', clockMs: 780_000 },
+      { ...early, id: 'late', clockMs: 720_000 },
+    ],
+  };
+  game = alignFilm(game, early.id, 100, 1_000, true);
+  assert.equal(game.events[1].videoSeconds, 160);
+  game = alignFilm(game, 'late', 400, 2_000, true);
+  game = alignFilm(game, early.id, 80, 3_000, true);
+  assert.equal(game.events[0].videoSeconds, 80);
+  assert.equal(game.events[0].meta.videoPinned, true);
+  assert.equal(game.events[1].videoSeconds, 140);
+  assert.equal(game.events[1].meta.videoPinned, false);
+  assert.equal(game.events[2].videoSeconds, 400);
+  assert.equal(game.events[2].meta.videoPinned, true);
+});
+
+test('a time field can be cleared without keeping a leading zero', () => {
+  assert.equal(cleanDigits('013'), '13');
+  assert.equal(cleanDigits(''), '');
+  assert.equal(cleanDigits('0'), '0');
+  assert.equal(cleanDigits('99', 2, 59), '59');
+});
+
+test('renaming a game keeps the score and updates the name and date', () => {
+  const game = fresh();
+  const next = renameGame(game, '  Everett Selects  ', '2026-09-26', 5_000);
+  assert.equal(next.opponent, 'Everett Selects');
+  assert.equal(next.date, '2026-09-26');
+  assert.equal(next.scoreUs, game.scoreUs);
+  assert.equal(next.events.length, game.events.length);
+  assert.equal(renameGame(game, '   ', '2026-01-01', 5_000), game);
+  assert.equal(renameGame(game, 'Everett', 'September', 1).date, game.date);
+});
+
+test('youtube timestamps list goals and can add penalties and shots', () => {
+  const names = [
+    { id: 'p77', number: '77', first: 'Alex', last: 'Poulin' },
+    { id: 'p3', number: '3', first: 'Carson', last: 'Bader' },
+  ];
+  const game = { opponent: 'Montana Wolves' };
+  const events = [
+    { type: 'SHOT' as const, period: 1, videoSeconds: 400, meta: { playerId: 'p3' } },
+    { type: 'GOAL' as const, period: 1, videoSeconds: 999, meta: { scorerId: 'p77' } },
+    { type: 'GOAL' as const, period: 1, videoSeconds: null, meta: { scorerId: 'p3' } },
+    { type: 'OPP_GOAL' as const, period: 1, videoSeconds: 1446, meta: {} },
+    { type: 'PERIOD' as const, period: 2, videoSeconds: 1701, meta: {} },
+    { type: 'PENALTY' as const, period: 2, videoSeconds: 1800, meta: { playerId: 'p3', infraction: 'Tripping' } },
+    { type: 'GOAL' as const, period: 2, videoSeconds: 1977, meta: { scorerId: 'p3' } },
+    { type: 'OPP_SHOT' as const, period: 2, videoSeconds: 2000, meta: {} },
+    { type: 'PENALTY_SHOT' as const, period: 2, videoSeconds: 2100, meta: { playerId: 'p77', result: 'goal' } },
+    { type: 'PENALTY_SHOT' as const, period: 2, videoSeconds: 2200, meta: { playerId: 'p77', result: 'miss' } },
+  ];
+  const goals = youtubeTimestamps(game, names, events, { goals: true, penalties: false, shots: false });
+  assert.equal(goals.missing, 1);
+  assert.equal(
+    goals.text,
+    [
+      '00:00:00',
+      '',
+      '00:16:39 #77 Alex Poulin',
+      '00:24:06 Montana Wolves',
+      '',
+      `00:28:21${' '.repeat(20)}— period 2 —`,
+      '',
+      '00:32:57 #3 Carson Bader',
+      '00:35:00 #77 Alex Poulin',
+    ].join('\n'),
+  );
+  const full = youtubeTimestamps(game, names, events, { goals: true, penalties: true, shots: true });
+  assert.match(full.text, /00:06:40 #3 Carson Bader — shot/);
+  assert.match(full.text, /00:30:00 #3 Carson Bader — Tripping/);
+  assert.match(full.text, /00:33:20 Montana Wolves — shot/);
+  assert.equal(full.text.includes('00:36:40'), false);
+  assert.equal(youtubeTimestamps(game, names, events, { goals: false, penalties: false, shots: false }).text, '');
 });
 
 test('event colors follow the kind of play', () => {

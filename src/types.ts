@@ -71,6 +71,8 @@ export type EventMeta = {
   nextGoalieId?: string | null;
   previousPeriod?: number;
   previousRemainingMs?: number;
+  /** This YouTube time was entered by hand. Later aligns leave it alone. */
+  videoPinned?: boolean;
   /** Score, shots, goalie, penalties, and goalie time immediately after this tag. */
   board?: BoardMark;
 };

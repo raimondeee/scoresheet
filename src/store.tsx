@@ -27,6 +27,7 @@ import {
   updatePenalty,
   setEventVideo,
   setVideoSeconds,
+  renameGame,
   setYoutube,
   startClock,
   switchGoalie,
@@ -92,6 +93,7 @@ type Store = {
   editEvent: (id: string, eventId: string, edit: EventEdit) => void;
   removeEvent: (id: string, eventId: string) => void;
   editYoutube: (id: string, url: string) => void;
+  renameGame: (id: string, opponent: string, date: string) => void;
   alignFilm: (id: string, anchorEventId: string, videoSeconds: number, laterOnly?: boolean) => void;
   editDressed: (id: string, dressedIds: string[]) => void;
   finish: (id: string) => void;
@@ -249,6 +251,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     editEvent: (id, eventId, edit) => update(id, (game, roster, t) => editEvent(game, roster, eventId, edit, t)),
     removeEvent: (id, eventId) => update(id, (game, _roster, t) => removeEvent(game, eventId, t)),
     editYoutube: (id, url) => update(id, (game, _roster, t) => setYoutube(game, url, t)),
+    renameGame: (id, opponent, date) => update(id, (game, _roster, t) => renameGame(game, opponent, date, t)),
     alignFilm: (id, anchorEventId, videoSeconds, laterOnly) =>
       update(id, (game, _roster, t) => alignFilm(game, anchorEventId, videoSeconds, t, laterOnly)),
     editDressed: (id, dressedIds) => update(id, (game, roster, t) => setDressed(game, roster, dressedIds, t)),

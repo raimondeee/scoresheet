@@ -170,7 +170,16 @@ h2 { margin: 0 0 10px; font-size: 20px; }
 .tag { border-radius: 999px; padding: 2px 8px; background: #243240; color: var(--text); }
 
 .field, .check { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 13px; }
-.field input, .field select, .field textarea, .pair input {
+.timestamp-out {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre;
+  overflow: auto;
+}
+.field input, .field select, .field textarea, .pair input, .timestamp-out {
   background: #0c141b;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -623,6 +632,15 @@ table.stats th { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; t
 }
 .stat-tip-pop.above { transform: translate(-50%, -100%); }
 .film-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.film-align { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.film-align input {
+  width: 112px;
+  background: #0c141b;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: var(--text);
+}
 .footnote { margin: 0; }
 .boot { min-height: 100vh; display: grid; place-items: center; color: var(--muted); }
 

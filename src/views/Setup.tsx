@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { TimeNumber } from '../components/TimeNumber.tsx';
 import { byNumber } from '../hockey.ts';
 import { useApp } from '../store.tsx';
 import type { NewGame } from '../types.ts';
@@ -33,21 +34,18 @@ function ClockPair({
     <div className="length-line">
       <span>{label}</span>
       <div className="length-time">
-        <input
-          type="number"
-          min={0}
-          aria-label={`${label} minutes`}
+        <TimeNumber
+          label={`${label} minutes`}
           value={parts.minutes}
-          onChange={(event) => onChange(join(Number(event.target.value), parts.seconds))}
+          onValue={(minutes) => onChange(join(minutes, parts.seconds))}
         />
         <span aria-hidden="true">:</span>
-        <input
-          type="number"
-          min={0}
-          max={59}
-          aria-label={`${label} seconds`}
+        <TimeNumber
+          label={`${label} seconds`}
           value={parts.seconds}
-          onChange={(event) => onChange(join(parts.minutes, Number(event.target.value)))}
+          max={59}
+          maxDigits={2}
+          onValue={(seconds) => onChange(join(parts.minutes, seconds))}
         />
       </div>
     </div>

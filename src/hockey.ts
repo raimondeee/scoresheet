@@ -280,9 +280,131 @@ export function formatGameStamp(period: number, clockMs: number) {
   return `${ordinalPeriod(period)} ${formatClock(clockMs)}`;
 }
 
+/** Keep a time field empty while it is being cleared, and drop a leading zero so 13 stays 13. */
+export function cleanDigits(raw: string, maxDigits = 3, max?: number) {
+  const digits = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, maxDigits);
+  if (!digits) return '';
+  if (max != null && Number(digits) > max) return String(max);
+  return digits;
+}
+
 export function formatDate(value: string) {
   if (!value) return '';
   const date = new Date(value.length === 10 ? `${value}T12:00:00` : value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export type TimestampChoice = {
+  goals: boolean;
+  penalties: boolean;
+  shots: boolean;
+};
+
+type TimestampEvent = {
+  type: EventType;
+  period: number;
+  videoSeconds: number | null;
+  meta?: {
+    scorerId?: string | null;
+    playerId?: string | null;
+    infraction?: string;
+    result?: string;
+  };
+};
+
+const MARKER_PAD = 20;
+
+function timestampName(
+  roster: Array<Pick<Player, 'id' | 'number' | 'first' | 'last'>>,
+  snapshots: Record<string, Pick<Player, 'number' | 'first' | 'last'>> | undefined,
+  id: string | null | undefined,
+) {
+  if (!id) return '';
+  const player = snapshots?.[id] ?? roster.find((item) => item.id === id);
+  return player ? playerName(player) : '';
+}
+
+function wantsTimestamp(event: TimestampEvent, choice: TimestampChoice) {
+  if (event.type === 'GOAL' || event.type === 'OPP_GOAL') return choice.goals;
+  if (event.type === 'PENALTY' || event.type === 'OPP_PENALTY') return choice.penalties;
+  if (event.type === 'SHOT' || event.type === 'OPP_SHOT') return choice.shots;
+  if (event.type === 'PENALTY_SHOT' || event.type === 'OPP_PENALTY_SHOT') {
+    if (event.meta?.result === 'miss') return false;
+    if (event.meta?.result === 'goal') return choice.goals;
+    return choice.shots;
+  }
+  return false;
+}
+
+function timestampLabel(
+  game: { opponent: string },
+  roster: Array<Pick<Player, 'id' | 'number' | 'first' | 'last'>>,
+  snapshots: Record<string, Pick<Player, 'number' | 'first' | 'last'>> | undefined,
+  event: TimestampEvent,
+) {
+  const ours = timestampName(roster, snapshots, event.meta?.scorerId ?? event.meta?.playerId);
+  if (event.type === 'GOAL' || event.type === 'PENALTY_SHOT') return ours || 'Goal';
+  if (event.type === 'OPP_GOAL' || event.type === 'OPP_PENALTY_SHOT') return game.opponent.trim() || 'Opponent';
+  if (event.type === 'PENALTY') {
+    const who = event.meta?.playerId ? ours || 'Player' : 'Bench';
+    return `${who} — ${event.meta?.infraction || 'Penalty'}`;
+  }
+  if (event.type === 'OPP_PENALTY') return `${game.opponent.trim() || 'Opponent'} — ${event.meta?.infraction || 'Penalty'}`;
+  if (event.type === 'SHOT') return `${ours || 'Shot'} — shot`;
+  if (event.type === 'OPP_SHOT') return `${game.opponent.trim() || 'Opponent'} — shot`;
+  return '';
+}
+
+function periodMarker(period: number) {
+  if (period === 4) return '— overtime —';
+  return `— period ${period} —`;
+}
+
+/** YouTube description lines. Goals, and optionally penalties and shots, in video order. */
+export function youtubeTimestamps(
+  game: { opponent: string; playerSnapshots?: Record<string, Pick<Player, 'number' | 'first' | 'last'>> },
+  roster: Array<Pick<Player, 'id' | 'number' | 'first' | 'last'>>,
+  events: TimestampEvent[],
+  choice: TimestampChoice,
+): { text: string; missing: number } {
+  const snapshots = game.playerSnapshots;
+  const chosen = events.filter((event) => wantsTimestamp(event, choice));
+  const missing = chosen.filter((event) => event.videoSeconds == null).length;
+  const rows: Array<{ seconds: number; label: string; marker: boolean; order: number }> = [];
+  const timedPeriods = new Set<number>();
+  chosen.forEach((event, order) => {
+    if (event.videoSeconds == null) return;
+    timedPeriods.add(event.period);
+    rows.push({
+      seconds: Math.max(0, Math.floor(event.videoSeconds)),
+      label: timestampLabel(game, roster, snapshots, event),
+      marker: false,
+      order,
+    });
+  });
+  for (const period of timedPeriods) {
+    if (period < 2) continue;
+    const marker = events.find((event) => event.type === 'PERIOD' && event.period === period && event.videoSeconds != null);
+    if (!marker || marker.videoSeconds == null) continue;
+    rows.push({
+      seconds: Math.max(0, Math.floor(marker.videoSeconds)),
+      label: periodMarker(period),
+      marker: true,
+      order: -period,
+    });
+  }
+  if (!rows.length) return { text: '', missing };
+  rows.sort((a, b) => a.seconds - b.seconds || Number(b.marker) - Number(a.marker) || a.order - b.order);
+  const lines: string[] = [];
+  if (rows[0].seconds > 0) lines.push('00:00:00', '');
+  for (const row of rows) {
+    const time = formatVideoClock(row.seconds);
+    if (row.marker) {
+      if (lines.length && lines[lines.length - 1] !== '') lines.push('');
+      lines.push(`${time}${' '.repeat(MARKER_PAD)}${row.label}`, '');
+    } else lines.push(`${time} ${row.label}`);
+  }
+  while (lines.length && lines[lines.length - 1] === '') lines.pop();
+  return { text: lines.join('\n'), missing };
 }

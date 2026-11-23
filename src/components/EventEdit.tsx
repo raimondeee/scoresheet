@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { INFRACTIONS, formatVideo, parseVideoClock } from '../hockey.ts';
 import type { EventEdit, Game, GameEvent, Player, ShotResult } from '../types.ts';
 import { Modal } from './Modal.tsx';
+import { TimeNumber } from './TimeNumber.tsx';
 import { PlayerGrid } from './PlayerGrid.tsx';
 
 const REMOVABLE = new Set<GameEvent['type']>([
@@ -91,11 +92,11 @@ export function EventEditModal({
         </label>
         <label className="field">
           Minutes left
-          <input type="number" min={0} value={minutes} onChange={(item) => setMinutes(Number(item.target.value))} />
+          <TimeNumber label="Minutes left" value={minutes} onValue={setMinutes} />
         </label>
         <label className="field">
           Seconds
-          <input type="number" min={0} max={59} value={seconds} onChange={(item) => setSeconds(Number(item.target.value))} />
+          <TimeNumber label="Seconds" value={seconds} max={59} maxDigits={2} onValue={setSeconds} />
         </label>
       </div>
       <label className="field">

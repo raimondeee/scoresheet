@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BoxScore } from '../components/BoxScore.tsx';
+import { TimeNumber } from '../components/TimeNumber.tsx';
 import { EventEditModal } from '../components/EventEdit.tsx';
 import { FilmPlayer, type FilmPlayerHandle } from '../components/FilmPlayer.tsx';
 import { Modal } from '../components/Modal.tsx';
@@ -1225,16 +1226,16 @@ function PenaltyEditWindow({
       <div className="pair">
         <label className="field">
           Minutes left
-          <input type="number" min={0} value={draft.minutes} onChange={(event) => onChange({ ...draft, minutes: Number(event.target.value) })} />
+          <TimeNumber label="Minutes left" value={draft.minutes} onValue={(minutes) => onChange({ ...draft, minutes })} />
         </label>
         <label className="field">
           Seconds left
-          <input
-            type="number"
-            min={0}
-            max={59}
+          <TimeNumber
+            label="Seconds left"
             value={draft.seconds}
-            onChange={(event) => onChange({ ...draft, seconds: Number(event.target.value) })}
+            max={59}
+            maxDigits={2}
+            onValue={(seconds) => onChange({ ...draft, seconds })}
           />
         </label>
       </div>
@@ -1281,21 +1282,14 @@ function LengthsWindow({
         {current ? <small className="muted"> · now</small> : null}
       </span>
       <div className="length-time">
-        <input
-          type="number"
-          min={0}
-          aria-label={`${label} minutes`}
-          value={value.minutes}
-          onChange={(event) => setValue({ ...value, minutes: Number(event.target.value) })}
-        />
+        <TimeNumber label={`${label} minutes`} value={value.minutes} onValue={(minutes) => setValue({ ...value, minutes })} />
         <span aria-hidden="true">:</span>
-        <input
-          type="number"
-          min={0}
-          max={59}
-          aria-label={`${label} seconds`}
+        <TimeNumber
+          label={`${label} seconds`}
           value={value.seconds}
-          onChange={(event) => setValue({ ...value, seconds: Number(event.target.value) })}
+          max={59}
+          maxDigits={2}
+          onValue={(seconds) => setValue({ ...value, seconds })}
         />
       </div>
     </div>
@@ -1354,11 +1348,11 @@ function ClockWindow({ remainingMs, onClose, onSave }: { remainingMs: number; on
       <div className="pair">
         <label className="field">
           Minutes
-          <input type="number" min={0} value={minutes} onChange={(event) => setMinutes(Number(event.target.value))} />
+          <TimeNumber label="Minutes" value={minutes} onValue={setMinutes} />
         </label>
         <label className="field">
           Seconds
-          <input type="number" min={0} max={59} value={seconds} onChange={(event) => setSeconds(Number(event.target.value))} />
+          <TimeNumber label="Seconds" value={seconds} max={59} maxDigits={2} onValue={setSeconds} />
         </label>
       </div>
       <button type="button" className="btn btn-green" onClick={() => onSave((minutes * 60 + Math.min(59, seconds)) * 1000)}>

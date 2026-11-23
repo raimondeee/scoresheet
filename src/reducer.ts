@@ -484,19 +484,39 @@ export function alignFilm(
   if (!anchor) return game;
   const video = Math.max(0, Math.round(anchorVideoSeconds));
   const anchorElapsed = gameElapsedMs(game, anchor.period, anchor.clockMs);
+  const laterPins = laterOnly
+    ? game.events
+        .filter((event) => event.id !== anchor.id && event.meta.videoPinned)
+        .map((event) => gameElapsedMs(game, event.period, event.clockMs))
+        .filter((elapsed) => elapsed > anchorElapsed)
+    : [];
+  const stopAt = laterPins.length ? Math.min(...laterPins) : Number.POSITIVE_INFINITY;
   return {
     ...game,
     updatedAt: new Date(t).toISOString(),
     videoSeconds: video,
     events: game.events.map((event) => {
-      if (laterOnly && gameElapsedMs(game, event.period, event.clockMs) < anchorElapsed) return event;
-      return { ...event, videoSeconds: videoSecondsFromAnchor(game, anchor, video, event) };
+      const elapsed = gameElapsedMs(game, event.period, event.clockMs);
+      if (laterOnly && (elapsed < anchorElapsed || elapsed >= stopAt)) return event;
+      const seconds = event.id === anchor.id ? video : videoSecondsFromAnchor(game, anchor, video, event);
+      return {
+        ...event,
+        videoSeconds: seconds,
+        meta: { ...event.meta, videoPinned: event.id === anchor.id },
+      };
     }),
   };
 }
 
 export function setYoutube(game: Game, youtubeUrl: string, t: number): Game {
   return { ...game, youtubeUrl: youtubeUrl.trim(), updatedAt: new Date(t).toISOString() };
+}
+
+export function renameGame(game: Game, opponent: string, date: string, t: number): Game {
+  const name = opponent.trim();
+  if (!name) return game;
+  const nextDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : game.date;
+  return { ...game, opponent: name, date: nextDate, updatedAt: new Date(t).toISOString() };
 }
 
 export function setDressed(game: Game, roster: Player[], dressedIds: string[], t: number): Game {
