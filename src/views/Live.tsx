@@ -348,7 +348,7 @@ export function Live() {
                     if (game.clock.running) app.pause(game.id);
                   }}
                 />
-                <p className="muted">Pausing the film stops the clock.</p>
+                <p className="muted">Pausing the film stops the clock. Start clock plays it.</p>
               </>
             ) : (
               <p className="muted">Save a YouTube link and the film plays here.</p>
@@ -395,6 +395,7 @@ export function Live() {
               else {
                 setFilmPauseAt(null);
                 app.start(game.id);
+                if (showFilm && filmId) playerRef.current?.play();
               }
             }}
           >

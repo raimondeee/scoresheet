@@ -4,12 +4,14 @@ export type FilmPlayerHandle = {
   seconds: () => number | null;
   time: () => number | null;
   seek: (seconds: number) => void;
+  play: () => void;
 };
 
 type YtPlayer = {
   destroy: () => void;
   getCurrentTime: () => number;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  playVideo: () => void;
 };
 
 type YtNamespace = {
@@ -84,6 +86,15 @@ export const FilmPlayer = forwardRef<FilmPlayerHandle, { videoId: string; start:
         player.seekTo(Math.max(0, seconds), true);
       } catch {
         /* The player can reject a seek before it is ready. */
+      }
+    },
+    play: () => {
+      const player = playerRef.current;
+      if (!player) return;
+      try {
+        player.playVideo();
+      } catch {
+        /* The player can reject play before it is ready. */
       }
     },
   }));
