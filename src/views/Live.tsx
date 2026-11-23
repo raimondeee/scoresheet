@@ -72,6 +72,7 @@ type Wizard =
   | { type: 'event'; eventId: string }
   | { type: 'clock' }
   | { type: 'dressed' }
+  | { type: 'goalie' }
   | { type: 'finish' };
 
 function ClockDigits({ clock }: { clock: Game['clock'] }) {
@@ -569,6 +570,10 @@ export function Live() {
               Box score
               <small>Clock keeps running</small>
             </button>
+            <button type="button" className="action goalie" onClick={() => setWizard({ type: 'goalie' })}>
+              Goalie
+              <small>{goalieLabel(roster, game.goalieId)}</small>
+            </button>
           </div>
         </div>
 
@@ -756,6 +761,18 @@ export function Live() {
           onClose={close}
           onSave={(ms) => {
             app.setRemaining(game.id, ms);
+            close();
+          }}
+        />
+      ) : null}
+
+      {wizard?.type === 'goalie' ? (
+        <GoalieWindow
+          roster={[...roster].sort(byNumber)}
+          goalieId={game.goalieId}
+          onClose={close}
+          onSave={(goalieId) => {
+            app.changeGoalie(game.id, goalieId, videoNow());
             close();
           }}
         />
@@ -1359,6 +1376,42 @@ function ClockWindow({ remainingMs, onClose, onSave }: { remainingMs: number; on
       <button type="button" className="btn btn-green" onClick={() => onSave((minutes * 60 + Math.min(59, seconds)) * 1000)}>
         Set to {minutes}:{String(Math.min(59, Math.max(0, seconds))).padStart(2, '0')}
       </button>
+    </Modal>
+  );
+}
+
+function GoalieWindow({
+  roster,
+  goalieId,
+  onClose,
+  onSave,
+}: {
+  roster: Player[];
+  goalieId: string | null;
+  onClose: () => void;
+  onSave: (goalieId: string | null) => void;
+}) {
+  const goalies = roster.filter((player) => player.position === 'G');
+  return (
+    <Modal title="Goalie" subtitle="The clock keeps running. Minutes already played stay with the goalie who was in." onClose={onClose}>
+      <div className="picks">
+        <button type="button" className={goalieId ? 'pick' : 'pick on'} onClick={() => onSave(null)}>
+          <b>—</b>
+          <span>Empty net</span>
+        </button>
+        {goalies.map((player) => (
+          <button
+            type="button"
+            key={player.id}
+            className={goalieId === player.id ? 'pick goalie on' : 'pick goalie'}
+            onClick={() => onSave(player.id)}
+          >
+            <b>#{player.number}</b>
+            <span>{player.last}</span>
+            <small>{player.first}</small>
+          </button>
+        ))}
+      </div>
     </Modal>
   );
 }

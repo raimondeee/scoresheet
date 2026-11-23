@@ -405,8 +405,10 @@ export function addGreatPlay(game: Game, note: string, t: number): Game {
 export function switchGoalie(game: Game, roster: Player[], goalieId: string | null, t: number): Game {
   if (goalieId === game.goalieId) return game;
   const frozen = game.clock.running ? freeze(game, t, true) : game;
+  const dressedIds =
+    goalieId && !frozen.dressedIds.includes(goalieId) ? [...frozen.dressedIds, goalieId] : frozen.dressedIds;
   const nextGoalie = findPlayer(roster, frozen, goalieId);
-  const next = touch(frozen, t, roster, [goalieId]);
+  const next = touch({ ...frozen, dressedIds }, t, roster, [goalieId]);
   const event = stampEvent(next, t, {
     type: 'GOALIE',
     detail: nextGoalie ? `Goalie — ${playerName(nextGoalie)}` : 'Empty net',
@@ -520,9 +522,16 @@ export function renameGame(game: Game, opponent: string, date: string, t: number
 }
 
 export function setDressed(game: Game, roster: Player[], dressedIds: string[], t: number): Game {
-  const next = touch({ ...game, dressedIds }, t, roster, dressedIds);
-  const goalieStillDressed = !next.goalieId || dressedIds.includes(next.goalieId);
-  return goalieStillDressed ? next : { ...next, goalieId: null };
+  const base = game.clock.running && game.goalieId && !dressedIds.includes(game.goalieId) ? freeze(game, t, true) : game;
+  const next = touch({ ...base, dressedIds }, t, roster, dressedIds);
+  if (!next.goalieId || dressedIds.includes(next.goalieId)) return next;
+  const cleared = { ...next, goalieId: null };
+  const event = stampEvent(cleared, t, {
+    type: 'GOALIE',
+    detail: 'Empty net',
+    meta: { previousGoalieId: next.goalieId, nextGoalieId: null },
+  });
+  return append(cleared, event, t);
 }
 
 export function finalizeGame(game: Game, t: number): Game {

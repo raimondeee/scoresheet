@@ -311,6 +311,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .action.opp-pen { --c: #ff8a3d; }
 .action.great { --c: #2ee0d0; }
 .action.box { --c: #8b93a7; }
+.action.goalie { --c: #7eb6ff; }
 .penalty-board {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 112px;

@@ -85,7 +85,7 @@ type Store = {
     id: string,
     lengths: { periodLengthsMs: [number, number, number]; otLengthMs: number; penaltyLengthsMs: PenaltyLengths },
   ) => void;
-  changeGoalie: (id: string, goalieId: string | null) => void;
+  changeGoalie: (id: string, goalieId: string | null, video: number | null) => void;
   setRemaining: (id: string, remainingMs: number) => void;
   advancePeriod: (id: string) => void;
   stampVideo: (id: string, video: number | null) => void;
@@ -243,7 +243,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     clearPenalty: (id, penaltyId) => update(id, (game, roster, t) => clearPenalty(game, roster, penaltyId, t)),
     setPenaltyLengths: (id, lengths) => update(id, (game, _roster, t) => setPenaltyLengths(game, lengths, t)),
     setLengths: (id, lengths) => update(id, (game, _roster, t) => setLengths(game, lengths, t)),
-    changeGoalie: (id, goalieId) => update(id, (game, roster, t) => switchGoalie(game, roster, goalieId, t)),
+    changeGoalie: (id, goalieId, video) =>
+      update(id, (game, roster, t) => switchGoalie(setVideoSeconds(game, video, t), roster, goalieId, t)),
     setRemaining: (id, remainingMs) => update(id, (game, _roster, t) => setClock(game, remainingMs, t)),
     advancePeriod: (id) => update(id, (game, _roster, t) => nextPeriod(game, t)),
     stampVideo: (id, video) => update(id, (game, _roster, t) => setVideoSeconds(game, video, t)),

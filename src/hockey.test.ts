@@ -24,7 +24,9 @@ import {
   renameGame,
   returnToEvent,
   setClock,
+  setDressed,
   setLengths,
+  switchGoalie,
   setPenaltyLengths,
   startClock,
   undo,
@@ -416,6 +418,31 @@ test('aligning below a tag leaves earlier stamps and stops at the next aligned t
   assert.equal(game.events[1].meta.videoPinned, false);
   assert.equal(game.events[2].videoSeconds, 400);
   assert.equal(game.events[2].meta.videoPinned, true);
+});
+
+test('a goalie change keeps the clock running and a dressed-list save records an empty net', () => {
+  const withMahan: Player[] = [...roster, { id: 'g2', number: '17', first: 'Christopher', last: 'Mahan', position: 'G' }];
+  let game = startClock(fresh(), 1_000);
+  game = switchGoalie(game, withMahan, 'g2', 4_000);
+  assert.equal(game.clock.running, true);
+  assert.equal(game.goalieId, 'g2');
+  assert.equal(game.starterGoalieId, 'g');
+  assert.equal(game.goalieMs.g, 3_000);
+  assert.ok(game.dressedIds.includes('g2'));
+  assert.equal(game.events.at(-1)?.detail, 'Goalie — #17 Christopher Mahan');
+  game = addOppShot(game, withMahan, 4_000);
+  assert.equal(game.events.at(-1)?.detail, 'Save — #17 Christopher Mahan');
+  game = switchGoalie(game, withMahan, null, 5_000);
+  assert.equal(game.goalieId, null);
+  assert.equal(game.goalieMs.g2, 1_000);
+  game = addOppShot(game, withMahan, 5_000);
+  assert.equal(game.events.at(-1)?.detail, 'Opp shot — empty net');
+
+  let dressed = fresh();
+  dressed = setDressed(dressed, roster, dressed.dressedIds.filter((id) => id !== 'g'), 1);
+  assert.equal(dressed.goalieId, null);
+  assert.equal(dressed.starterGoalieId, 'g');
+  assert.equal(dressed.events.at(-1)?.detail, 'Empty net');
 });
 
 test('a time field can be cleared without keeping a leading zero', () => {
